@@ -28,12 +28,21 @@ app.add_middleware(
 )
 
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
+OPENROUTER_MANAGEMENT_KEY = os.getenv("OPENROUTER_MANAGEMENT_KEY")
 OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
+OPENROUTER_KEYS_URL = "https://openrouter.ai/api/v1/keys"
 STRIPE_SECRET_KEY = os.getenv("STRIPE_SECRET_KEY")
 STRIPE_PUBLISHABLE_KEY = os.getenv("STRIPE_PUBLISHABLE_KEY")
 STRIPE_WEBHOOK_SECRET = os.getenv("STRIPE_WEBHOOK_SECRET")
 ADMIN_SECRET = os.getenv("ADMIN_SECRET", "change-me-in-production")
 BASE_URL = os.getenv("BASE_URL", "http://localhost:8000")
+
+# Credit limits per plan (USD) — generous buffer above actual cost
+PLAN_CREDIT_LIMITS = {
+    "basic": 3.0,       # 50 articles x $0.0003 = $0.015 actual cost, $3 cap = 200x safety margin
+    "pro": 10.0,        # 200 articles x $0.0003 = $0.06 actual, $10 cap
+    "enterprise": 35.0  # 1000 articles x $0.0003 = $0.30 actual, $35 cap
+}
 
 if STRIPE_SECRET_KEY:
     stripe.api_key = STRIPE_SECRET_KEY
@@ -140,10 +149,56 @@ async def require_admin(x_admin_secret: Optional[str] = Header(None)):
     if x_admin_secret != ADMIN_SECRET:
         raise HTTPException(status_code=403, detail="Forbidden")
 
+# ── OpenRouter key provisioning ──
+
+async def provision_openrouter_key(email: str, tier: str) -> dict:
+    """Create a per-customer OpenRouter sub-key with a spending limit."""
+    if not OPENROUTER_MANAGEMENT_KEY:
+        return {"error": "No management key configured"}
+
+    limit = PLAN_CREDIT_LIMITS.get(tier, 3.0)
+    label = f"WriteAI:{email}:{tier}"
+
+    async with httpx.AsyncClient(timeout=15) as client:
+        resp = await client.post(
+            OPENROUTER_KEYS_URL,
+            headers={
+                "Authorization": f"Bearer {OPENROUTER_MANAGEMENT_KEY}",
+                "Content-Type": "application/json"
+            },
+            json={
+                "name": label,
+                "label": label,
+                "limit": limit,
+                "limit_reset": "monthly"
+            }
+        )
+        resp.raise_for_status()
+        data = resp.json()
+        # OpenRouter returns: {"key": "sk-or-v1-...", "data": {"hash": "...", "label": "sk-or-v1-trunc...", ...}}
+        full_key = data.get("key", "")          # full key — only returned once at creation
+        key_meta = data.get("data", {})
+        return {
+            "key": full_key,
+            "hash": key_meta.get("hash", ""),
+            "limit": limit
+        }
+
+async def delete_openrouter_key(key_hash: str):
+    """Delete a customer's OpenRouter sub-key (on cancellation)."""
+    if not OPENROUTER_MANAGEMENT_KEY or not key_hash:
+        return
+    async with httpx.AsyncClient(timeout=10) as client:
+        await client.delete(
+            f"{OPENROUTER_KEYS_URL}/{key_hash}",
+            headers={"Authorization": f"Bearer {OPENROUTER_MANAGEMENT_KEY}"}
+        )
+
 # ── Content generation ──
 
-async def generate_ai_content(topic: str, style: str = "blog", length: str = "medium", tone: str = "professional") -> str:
-    if not OPENROUTER_API_KEY:
+async def generate_ai_content(topic: str, style: str = "blog", length: str = "medium", tone: str = "professional", customer_key: str = None) -> str:
+    api_key = customer_key or OPENROUTER_API_KEY
+    if not api_key:
         raise HTTPException(status_code=503, detail="Content generation temporarily unavailable")
 
     length_map = {"short": 300, "medium": 800, "long": 1500}
@@ -164,13 +219,14 @@ async def generate_ai_content(topic: str, style: str = "blog", length: str = "me
         response = await client.post(
             OPENROUTER_URL,
             headers={
-                "Authorization": f"Bearer {OPENROUTER_API_KEY}",
+                "Authorization": f"Bearer {api_key}",
                 "HTTP-Referer": "https://writeai.contentlabs.ai",
                 "X-Title": "WriteAI"
             },
             json={
                 "model": "openai/gpt-4o-mini",
                 "messages": [
+
                     {
                         "role": "system",
                         "content": (
@@ -296,7 +352,8 @@ async def generate_content(request: ContentRequest, user: dict = Depends(require
         )
 
     start = time.time()
-    content = await generate_ai_content(request.topic, request.style, request.length, request.tone)
+    customer_key = user.get("openrouter_key") or OPENROUTER_API_KEY
+    content = await generate_ai_content(request.topic, request.style, request.length, request.tone, customer_key=customer_key)
 
     # Update usage
     db = load_db()
@@ -392,6 +449,16 @@ async def stripe_webhook(request: Request):
         if email:
             db = load_db()
             user = db.get("users", {}).get(email, {})
+
+            # Provision a dedicated OpenRouter key for this customer
+            or_key_data = await provision_openrouter_key(email, tier)
+            customer_or_key = or_key_data.get("key", "")
+            customer_or_hash = or_key_data.get("hash", "")
+
+            if or_key_data.get("error"):
+                print(f"WARNING: Could not provision OpenRouter key for {email}: {or_key_data['error']}")
+                customer_or_key = OPENROUTER_API_KEY  # fallback to shared key
+
             user.update({
                 "email": email,
                 "status": "active",
@@ -399,15 +466,27 @@ async def stripe_webhook(request: Request):
                 "articles_limit": tier_info["articles"],
                 "articles_used": 0,
                 "stripe_session_id": session.get("id"),
-                "activated_at": time.time()
+                "activated_at": time.time(),
+                "openrouter_key": customer_or_key,
+                "openrouter_key_hash": customer_or_hash
             })
             db.setdefault("users", {})[email] = user
             save_db(db)
-            print(f"Activated: {email} on {tier}")
+            print(f"Activated: {email} on {tier} | OR key: {customer_or_key[:12] if customer_or_key else 'NONE'}...")
 
-    elif event["type"] in ["customer.subscription.deleted"]:
-        # Handle cancellation
-        pass
+    elif event["type"] == "customer.subscription.deleted":
+        # Clean up customer's OpenRouter key on cancellation
+        sub = event["data"]["object"]
+        customer_email = sub.get("metadata", {}).get("email", "")
+        if customer_email:
+            db = load_db()
+            user = db.get("users", {}).get(customer_email.lower(), {})
+            if user.get("openrouter_key_hash"):
+                await delete_openrouter_key(user["openrouter_key_hash"])
+            user["status"] = "cancelled"
+            db["users"][customer_email.lower()] = user
+            save_db(db)
+            print(f"Cancelled: {customer_email}")
 
     return {"status": "success"}
 
@@ -498,10 +577,16 @@ async def set_password(request: Request):
 # ── Admin ──
 
 @app.post("/admin/activate")
-async def admin_activate(email: str, tier: str, _: None = Depends(require_admin)):
+async def admin_activate(email: str, tier: str, password: str = None, _: None = Depends(require_admin)):
     tier_info = PRICING.get(tier, PRICING["basic"])
     db = load_db()
     user = db.get("users", {}).get(email.lower(), {})
+
+    # Provision OpenRouter key
+    or_key_data = await provision_openrouter_key(email, tier)
+    customer_or_key = or_key_data.get("key", "") or OPENROUTER_API_KEY
+
+    temp_pass = password or secrets.token_urlsafe(10)
     user.update({
         "email": email.lower(),
         "status": "active",
@@ -509,15 +594,20 @@ async def admin_activate(email: str, tier: str, _: None = Depends(require_admin)
         "articles_limit": tier_info["articles"],
         "articles_used": 0,
         "activated_at": time.time(),
-        "manually_activated": True
+        "manually_activated": True,
+        "password_hash": hash_password(temp_pass),
+        "openrouter_key": customer_or_key,
+        "openrouter_key_hash": or_key_data.get("hash", "")
     })
-    if not user.get("password_hash"):
-        temp_pass = secrets.token_urlsafe(8)
-        user["password_hash"] = hash_password(temp_pass)
-        user["temp_password"] = temp_pass
     db.setdefault("users", {})[email.lower()] = user
     save_db(db)
-    return {"status": "success", "email": email, "tier": tier, "temp_password": user.get("temp_password")}
+    return {
+        "status": "success",
+        "email": email,
+        "tier": tier,
+        "password": temp_pass,
+        "openrouter_key_provisioned": bool(or_key_data.get("key"))
+    }
 
 @app.get("/admin/users")
 async def admin_users(_: None = Depends(require_admin)):

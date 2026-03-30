@@ -10,5 +10,68 @@
     }
   ],
   "subscriptions": [],
-  "content_usage": {}
+  "content_usage": {},
+  "users": {
+    "hugo@test.com": {
+      "email": "hugo@test.com",
+      "name": "Hugo Test",
+      "password_hash": "fccdc00cf6ffa5db2ca317ae8d38fbcf0bc8fe3063935571319088b23be6b06d",
+      "status": "active",
+      "tier": "pro",
+      "articles_used": 1,
+      "articles_limit": 200,
+      "created_at": 1774914071.7918646,
+      "stripe_session_id": null,
+      "activated_at": 1774914173.7632105,
+      "manually_activated": true,
+      "openrouter_key": "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",
+      "openrouter_key_hash": "b74d47352882ffb544f451fe21e4c020962c1a2ef12cc2036b09dc73ac772492"
+    },
+    "client2@test.com": {
+      "email": "client2@test.com",
+      "status": "active",
+      "tier": "basic",
+      "articles_limit": 50,
+      "articles_used": 0,
+      "activated_at": 1774914199.0849247,
+      "manually_activated": true,
+      "password_hash": "dfea55b843cea1ebfddad5aafafc3eb2d323008280fe82ef45080a190592cf5e",
+      "openrouter_key": "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",
+      "openrouter_key_hash": "fb7a0447df4e5261a4c05a76ee4df0f0170a0b8b2dbf08c0a389e6c315a52a6f"
+    },
+    "hugo@contentlabs.ai": {
+      "email": "hugo@contentlabs.ai",
+      "status": "active",
+      "tier": "pro",
+      "articles_limit": 200,
+      "articles_used": 0,
+      "activated_at": 1774914222.5079126,
+      "manually_activated": true,
+      "password_hash": "bd822f570d6267eeba8323f4cea7fd5bb10ec68a50ba3b93f8b0fd5ed2c0b47d",
+      "openrouter_key": "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",
+      "openrouter_key_hash": "bb6d30982136c0455a8ec7ed6bad405ec7028847dc1486036a01f0dbcadda243"
+    }
+  },
+  "sessions": {
+    "V_F0DX_eibJZ0UtvUWPjQd-1PYkiovTToW_5VtZpo6Y": {
+      "email": "hugo@test.com",
+      "expires_at": 1777506071.7938123
+    },
+    "OE-GouEsudh8QoRW-WpY3lM54dK8BQhCa1ySayOOCL8": {
+      "email": "hugo@test.com",
+      "expires_at": 1777506085.0213919
+    },
+    "yRXCJYVYIAnL6HwmPugJ7OAprS-TlIeg4vF8BayMTgw": {
+      "email": "hugo@test.com",
+      "expires_at": 1777506096.6260402
+    },
+    "GDP4H3Mq2P7n01orMBpkP73FqLY8EfA2P5rGUAabBlY": {
+      "email": "hugo@test.com",
+      "expires_at": 1777506107.1795576
+    },
+    "v9W5g2Gqw-Cr1AkrNrwECrsrDpumQUKaq4kLfAMH14U": {
+      "email": "hugo@test.com",
+      "expires_at": 1777506173.766383
+    }
+  }
 }
