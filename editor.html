@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WriteAI – Editor</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --black: #080808;
+      --dark: #111;
+      --card: #161616;
+      --border: rgba(255,255,255,0.08);
+      --text: #f5f5f7;
+      --muted: rgba(245,245,247,0.45);
+      --accent: #a3e635;
+      --accent-glow: rgba(163,230,53,0.2);
+      --white: #ffffff;
+    }
+
+    body {
+      font-family: "Inter", -apple-system, sans-serif;
+      background: var(--black);
+      color: var(--text);
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    a { color: inherit; text-decoration: none; }
+
+    /* ── LOGIN SCREEN ── */
+    #login-screen {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .login-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 48px 40px;
+      width: 100%;
+      max-width: 420px;
+    }
+
+    .login-logo {
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      margin-bottom: 8px;
+    }
+    .login-logo span { color: var(--accent); }
+
+    .login-tagline {
+      font-size: 14px;
+      color: var(--muted);
+      margin-bottom: 36px;
+    }
+
+    .field-label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+
+    .field-input {
+      width: 100%;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 13px 16px;
+      font-size: 15px;
+      color: var(--white);
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      margin-bottom: 20px;
+    }
+
+    .field-input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-glow);
+    }
+
+    .field-input::placeholder { color: rgba(245,245,247,0.2); }
+
+    .btn-full {
+      width: 100%;
+      padding: 14px;
+      background: var(--accent);
+      color: #000;
+      border: none;
+      border-radius: 100px;
+      font-size: 15px;
+      font-weight: 700;
+      font-family: inherit;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-full:hover { box-shadow: 0 0 24px var(--accent-glow); }
+    .btn-full:disabled { opacity: 0.5; cursor: not-allowed; box-shadow: none; }
+
+    .login-error {
+      font-size: 13px;
+      color: #f87171;
+      margin-bottom: 16px;
+      display: none;
+    }
+
+    .login-help {
+      text-align: center;
+      font-size: 13px;
+      color: var(--muted);
+      margin-top: 20px;
+    }
+
+    .login-help a { color: var(--accent); }
+
+    /* ── MAIN APP ── */
+    #app-screen { display: none; }
+
+    .app-nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(8,8,8,0.92);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 24px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .app-logo {
+      font-size: 18px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      flex-shrink: 0;
+    }
+    .app-logo span { color: var(--accent); }
+
+    .usage-pill {
+      background: rgba(163,230,53,0.08);
+      border: 1px solid rgba(163,230,53,0.2);
+      border-radius: 100px;
+      padding: 5px 14px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--accent);
+    }
+
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .user-email {
+      font-size: 13px;
+      color: var(--muted);
+      max-width: 160px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .btn-signout {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      padding: 6px 14px;
+      border-radius: 100px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.2s;
+    }
+
+    .btn-signout:hover { border-color: rgba(255,255,255,0.2); color: var(--text); }
+
+    /* ── TWO-PANEL LAYOUT ── */
+    .editor-layout {
+      display: grid;
+      grid-template-columns: 340px 1fr;
+      min-height: calc(100vh - 60px);
+    }
+
+    /* ── LEFT PANEL ── */
+    .controls-panel {
+      border-right: 1px solid var(--border);
+      padding: 28px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      overflow-y: auto;
+    }
+
+    .panel-section {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .field-select {
+      width: 100%;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 11px 14px;
+      font-size: 14px;
+      color: var(--white);
+      font-family: inherit;
+      outline: none;
+      cursor: pointer;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='7' viewBox='0 0 12 7'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23888' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 14px center;
+      transition: border-color 0.2s;
+    }
+
+    .field-select:focus { border-color: var(--accent); }
+
+    .field-textarea {
+      width: 100%;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 14px;
+      font-size: 14px;
+      color: var(--white);
+      font-family: inherit;
+      outline: none;
+      resize: vertical;
+      min-height: 80px;
+      line-height: 1.5;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .field-textarea:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-glow);
+    }
+
+    .field-textarea::placeholder { color: rgba(245,245,247,0.2); }
+
+    .style-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .style-btn {
+      padding: 10px 8px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--muted);
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.15s;
+      text-align: center;
+    }
+
+    .style-btn.active {
+      background: rgba(163,230,53,0.1);
+      border-color: rgba(163,230,53,0.4);
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    .length-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 8px;
+    }
+
+    .length-btn {
+      padding: 9px 6px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--muted);
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.15s;
+      text-align: center;
+    }
+
+    .length-btn.active {
+      background: rgba(163,230,53,0.1);
+      border-color: rgba(163,230,53,0.4);
+      color: var(--accent);
+    }
+
+    .generate-btn {
+      width: 100%;
+      padding: 15px;
+      background: var(--accent);
+      color: #000;
+      border: none;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 800;
+      font-family: inherit;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 4px;
+    }
+
+    .generate-btn:hover { box-shadow: 0 0 28px var(--accent-glow); transform: translateY(-1px); }
+    .generate-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
+
+    .generate-hint {
+      text-align: center;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    /* ── RIGHT PANEL ── */
+    .output-panel {
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .output-toolbar {
+      padding: 14px 24px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-shrink: 0;
+    }
+
+    .output-meta {
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .output-meta span { color: var(--text); font-weight: 600; }
+
+    .toolbar-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn-tool {
+      padding: 7px 16px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.15s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-tool:hover { background: rgba(255,255,255,0.1); }
+    .btn-tool:disabled { opacity: 0.3; cursor: not-allowed; }
+
+    .output-area {
+      flex: 1;
+      padding: 32px 40px;
+      overflow-y: auto;
+      font-size: 16px;
+      line-height: 1.8;
+      color: var(--text);
+    }
+
+    .output-placeholder {
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      gap: 12px;
+      color: var(--muted);
+    }
+
+    .output-placeholder .big-icon {
+      font-size: 48px;
+      opacity: 0.3;
+    }
+
+    .output-placeholder h3 {
+      font-size: 18px;
+      font-weight: 700;
+      color: rgba(245,245,247,0.4);
+    }
+
+    .output-placeholder p {
+      font-size: 14px;
+      max-width: 280px;
+    }
+
+    .output-content h1, .output-content h2, .output-content h3 {
+      color: var(--white);
+      font-weight: 700;
+      margin: 24px 0 10px;
+      letter-spacing: -0.3px;
+    }
+
+    .output-content h1 { font-size: 26px; margin-top: 0; }
+    .output-content h2 { font-size: 20px; }
+    .output-content h3 { font-size: 17px; }
+
+    .output-content p { margin-bottom: 16px; color: rgba(245,245,247,0.8); }
+    .output-content p:last-child { margin-bottom: 0; }
+
+    .output-content strong { color: var(--white); }
+
+    .output-content ul, .output-content ol {
+      margin: 0 0 16px 24px;
+      color: rgba(245,245,247,0.8);
+    }
+
+    .output-content li { margin-bottom: 6px; line-height: 1.7; }
+
+    /* Loading animation */
+    .loading-dots {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      justify-content: center;
+      padding: 60px 0;
+    }
+
+    .loading-dots span {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--accent);
+      animation: dot-bounce 1.2s infinite;
+    }
+
+    .loading-dots span:nth-child(2) { animation-delay: 0.2s; }
+    .loading-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes dot-bounce {
+      0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
+      40% { transform: scale(1); opacity: 1; }
+    }
+
+    .word-count {
+      font-size: 12px;
+      color: var(--muted);
+      padding: 12px 40px;
+      border-top: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: var(--white);
+      color: #000;
+      padding: 12px 24px;
+      border-radius: 100px;
+      font-size: 14px;
+      font-weight: 600;
+      z-index: 9999;
+      transition: transform 0.3s ease;
+      white-space: nowrap;
+    }
+
+    .toast.show { transform: translateX(-50%) translateY(0); }
+
+    /* Mobile */
+    @media (max-width: 768px) {
+      .editor-layout {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto 1fr;
+      }
+
+      .controls-panel {
+        border-right: none;
+        border-bottom: 1px solid var(--border);
+        padding: 20px 16px;
+      }
+
+      .output-area {
+        padding: 20px 16px;
+        min-height: 400px;
+      }
+
+      .output-toolbar { padding: 12px 16px; }
+
+      .user-email { display: none; }
+
+      .login-box { padding: 36px 24px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- LOGIN SCREEN -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">Write<span>AI</span></div>
+    <div class="login-tagline">Enter your API key to start writing</div>
+
+    <label class="field-label" for="login-key">Your API key</label>
+    <input class="field-input" type="password" id="login-key" placeholder="wai_..." autocomplete="off">
+
+    <p class="login-error" id="login-error">Invalid API key. Check your welcome email and try again.</p>
+
+    <button class="btn-full" id="login-btn" onclick="doLogin()">Sign in</button>
+
+    <p class="login-help">
+      Don't have a key? <a href="/#pricing">Get one from £9.99/month</a><br>
+      <span style="margin-top:6px;display:block">Your key was emailed after checkout.</span>
+    </p>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="app-screen">
+  <nav class="app-nav">
+    <div class="app-logo">Write<span>AI</span></div>
+    <div class="usage-pill" id="usage-pill">— / — articles</div>
+    <div class="nav-right">
+      <span class="user-email" id="user-email"></span>
+      <button class="btn-signout" onclick="signOut()">Sign out</button>
+    </div>
+  </nav>
+
+  <div class="editor-layout">
+    <!-- LEFT: Controls -->
+    <div class="controls-panel">
+
+      <div class="panel-section">
+        <label class="field-label">What do you want to write about?</label>
+        <textarea class="field-textarea" id="topic-input" placeholder="e.g. How to get better sleep, 5 reasons to use a standing desk, Our new summer collection..." rows="3"></textarea>
+      </div>
+
+      <div class="panel-section">
+        <label class="field-label">Content type</label>
+        <div class="style-grid" id="style-grid">
+          <button class="style-btn active" data-val="blog" onclick="pickStyle(this)">Blog post</button>
+          <button class="style-btn" data-val="marketing" onclick="pickStyle(this)">Marketing copy</button>
+          <button class="style-btn" data-val="product" onclick="pickStyle(this)">Product description</button>
+          <button class="style-btn" data-val="social" onclick="pickStyle(this)">Social media</button>
+          <button class="style-btn" data-val="email" onclick="pickStyle(this)">Email newsletter</button>
+          <button class="style-btn" data-val="seo" onclick="pickStyle(this)">SEO article</button>
+        </div>
+      </div>
+
+      <div class="panel-section">
+        <label class="field-label">Length</label>
+        <div class="length-row" id="length-row">
+          <button class="length-btn active" data-val="short" onclick="pickLength(this)">Short<br><span style="font-weight:400;opacity:0.6">~300 words</span></button>
+          <button class="length-btn" data-val="medium" onclick="pickLength(this)">Medium<br><span style="font-weight:400;opacity:0.6">~800 words</span></button>
+          <button class="length-btn" data-val="long" onclick="pickLength(this)">Long<br><span style="font-weight:400;opacity:0.6">~1500 words</span></button>
+        </div>
+      </div>
+
+      <div class="panel-section">
+        <label class="field-label">Tone</label>
+        <select class="field-select" id="tone-select">
+          <option value="professional">Professional</option>
+          <option value="conversational">Conversational</option>
+          <option value="friendly">Friendly</option>
+          <option value="direct">Direct &amp; punchy</option>
+          <option value="formal">Formal</option>
+          <option value="humorous">Light-hearted</option>
+        </select>
+      </div>
+
+      <button class="generate-btn" id="gen-btn" onclick="generate()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+        Generate content
+      </button>
+      <p class="generate-hint" id="gen-hint">Ready to write</p>
+
+    </div>
+
+    <!-- RIGHT: Output -->
+    <div class="output-panel">
+      <div class="output-toolbar">
+        <div class="output-meta" id="output-meta">No content yet</div>
+        <div class="toolbar-actions">
+          <button class="btn-tool" id="copy-btn" onclick="copyContent()" disabled>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            Copy
+          </button>
+          <button class="btn-tool" id="download-btn" onclick="downloadContent()" disabled>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Download
+          </button>
+        </div>
+      </div>
+
+      <div class="output-area" id="output-area">
+        <div class="output-placeholder" id="output-placeholder">
+          <div class="big-icon">✦</div>
+          <h3>Your content will appear here</h3>
+          <p>Fill in the form on the left, then hit Generate.</p>
+        </div>
+      </div>
+
+      <div class="word-count" id="word-count" style="display:none"></div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  let apiKey = null;
+  let currentStyle = 'blog';
+  let currentLength = 'short';
+  let rawContent = '';
+
+  // ── AUTH ──
+
+  async function doLogin() {
+    const key = document.getElementById('login-key').value.trim();
+    const errEl = document.getElementById('login-error');
+    const btn = document.getElementById('login-btn');
+
+    if (!key) return;
+
+    errEl.style.display = 'none';
+    btn.textContent = 'Signing in...';
+    btn.disabled = true;
+
+    try {
+      const res = await fetch('/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ api_key: key })
+      });
+      const data = await res.json();
+
+      if (res.ok) {
+        apiKey = key;
+        sessionStorage.setItem('wai_key', key);
+        showApp(data);
+      } else {
+        errEl.textContent = data.detail || 'Invalid API key.';
+        errEl.style.display = 'block';
+        btn.textContent = 'Sign in';
+        btn.disabled = false;
+      }
+    } catch (e) {
+      errEl.textContent = 'Connection error. Please try again.';
+      errEl.style.display = 'block';
+      btn.textContent = 'Sign in';
+      btn.disabled = false;
+    }
+  }
+
+  function showApp(userData) {
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('app-screen').style.display = 'block';
+    document.getElementById('user-email').textContent = userData.email;
+    updateUsage(userData.articles_used, userData.articles_limit);
+  }
+
+  function updateUsage(used, limit) {
+    document.getElementById('usage-pill').textContent = `${used} / ${limit} articles used`;
+  }
+
+  function signOut() {
+    sessionStorage.removeItem('wai_key');
+    apiKey = null;
+    document.getElementById('login-screen').style.display = 'flex';
+    document.getElementById('app-screen').style.display = 'none';
+    document.getElementById('login-key').value = '';
+  }
+
+  // Auto-login from session
+  window.addEventListener('load', () => {
+    const saved = sessionStorage.getItem('wai_key');
+    if (saved) {
+      document.getElementById('login-key').value = saved;
+      doLogin();
+    }
+  });
+
+  // Enter key on login
+  document.getElementById('login-key').addEventListener('keydown', e => {
+    if (e.key === 'Enter') doLogin();
+  });
+
+  // ── CONTROLS ──
+
+  function pickStyle(btn) {
+    document.querySelectorAll('.style-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentStyle = btn.dataset.val;
+  }
+
+  function pickLength(btn) {
+    document.querySelectorAll('.length-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentLength = btn.dataset.val;
+  }
+
+  // ── GENERATE ──
+
+  async function generate() {
+    const topic = document.getElementById('topic-input').value.trim();
+    const tone = document.getElementById('tone-select').value;
+    const btn = document.getElementById('gen-btn');
+    const hint = document.getElementById('gen-hint');
+    const area = document.getElementById('output-area');
+
+    if (!topic) {
+      document.getElementById('topic-input').focus();
+      document.getElementById('topic-input').style.borderColor = '#f87171';
+      setTimeout(() => document.getElementById('topic-input').style.borderColor = '', 1500);
+      return;
+    }
+
+    btn.disabled = true;
+    btn.innerHTML = `<div class="loading-dots" style="padding:0;gap:4px"><span></span><span></span><span></span></div> Writing...`;
+    hint.textContent = 'This takes about 10–20 seconds…';
+
+    area.innerHTML = `<div class="loading-dots"><span></span><span></span><span></span></div>`;
+    document.getElementById('output-placeholder') && (document.getElementById('output-placeholder').style.display = 'none');
+    document.getElementById('copy-btn').disabled = true;
+    document.getElementById('download-btn').disabled = true;
+    document.getElementById('word-count').style.display = 'none';
+
+    const start = Date.now();
+
+    try {
+      const res = await fetch('/generate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-API-Key': apiKey
+        },
+        body: JSON.stringify({ topic, style: currentStyle, length: currentLength, tone })
+      });
+
+      const data = await res.json();
+
+      if (res.ok && data.status === 'success') {
+        rawContent = data.content;
+        const elapsed = ((Date.now() - start) / 1000).toFixed(1);
+        const words = rawContent.trim().split(/\s+/).length;
+
+        // Render markdown-like content
+        area.innerHTML = `<div class="output-content">${renderContent(rawContent)}</div>`;
+
+        // Update toolbar
+        const styleLabel = document.querySelector('.style-btn.active')?.textContent || currentStyle;
+        document.getElementById('output-meta').innerHTML = `<span>${styleLabel}</span> · ${words} words · generated in ${elapsed}s`;
+        document.getElementById('word-count').textContent = `${words} words`;
+        document.getElementById('word-count').style.display = 'block';
+
+        document.getElementById('copy-btn').disabled = false;
+        document.getElementById('download-btn').disabled = false;
+
+        // Update usage
+        if (data.usage) updateUsage(data.usage.articles_used, data.usage.articles_limit);
+
+        hint.textContent = `Done! ${data.usage?.remaining ?? '—'} articles remaining this month.`;
+      } else if (res.status === 401 || res.status === 403) {
+        signOut();
+      } else if (res.status === 429) {
+        area.innerHTML = `<div class="output-placeholder"><div class="big-icon">⚠️</div><h3>Monthly limit reached</h3><p>You've used all your articles for this month. <a href="/#pricing" style="color:var(--accent)">Upgrade your plan</a> for more.</p></div>`;
+        hint.textContent = 'Monthly limit reached';
+      } else {
+        throw new Error(data.detail || 'Generation failed');
+      }
+    } catch (e) {
+      area.innerHTML = `<div class="output-placeholder"><div class="big-icon">⚠️</div><h3>Something went wrong</h3><p>${e.message}</p></div>`;
+      hint.textContent = 'Error — please try again';
+    }
+
+    btn.disabled = false;
+    btn.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg> Generate content`;
+  }
+
+  // Enter to generate
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && e.metaKey) generate();
+  });
+
+  // ── RENDER ──
+
+  function renderContent(text) {
+    return text
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/^### (.+)$/gm, '<h3>$1</h3>')
+      .replace(/^## (.+)$/gm, '<h2>$1</h2>')
+      .replace(/^# (.+)$/gm, '<h1>$1</h1>')
+      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\*(.+?)\*/g, '<em>$1</em>')
+      .replace(/^[-*] (.+)$/gm, '<li>$1</li>')
+      .replace(/(<li>.*<\/li>\n?)+/g, s => `<ul>${s}</ul>`)
+      .split(/\n\n+/)
+      .map(block => {
+        if (block.startsWith('<h') || block.startsWith('<ul')) return block;
+        return `<p>${block.replace(/\n/g, ' ')}</p>`;
+      })
+      .join('\n');
+  }
+
+  // ── ACTIONS ──
+
+  function copyContent() {
+    if (!rawContent) return;
+    navigator.clipboard.writeText(rawContent).then(() => showToast('Copied to clipboard'));
+  }
+
+  function downloadContent() {
+    if (!rawContent) return;
+    const topic = document.getElementById('topic-input').value.trim().slice(0, 40).replace(/[^a-z0-9 ]/gi, '').replace(/\s+/g, '-').toLowerCase();
+    const blob = new Blob([rawContent], { type: 'text/plain' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `writeai-${topic || 'content'}.txt`;
+    a.click();
+  }
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2500);
+  }
+</script>
+</body>
+</html>

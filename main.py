@@ -172,11 +172,23 @@ async def generate_ai_content(topic: str, style: str = "blog", length: str = "me
                 "messages": [
                     {
                         "role": "system",
-                        "content": "You are an expert content writer. Write high-quality, original content that sounds natural and human. Never mention that you are an AI."
+                        "content": (
+                            "You are a skilled human writer. Write exactly like a real person — someone who has genuine experience and opinions on the topic. "
+                            "CRITICAL RULES:\n"
+                            "- Never use these words: delve, tapestry, unpack, leverage, game-changer, transformative, groundbreaking, spearhead, foster, multifaceted, nuanced, holistic, paradigm, synergy, robust, scalable, streamline, empower, unlock, revolutionize\n"
+                            "- Never start sentences with 'In conclusion', 'In summary', 'It's worth noting', 'It's important to', 'This is a'\n"
+                            "- Never write generic opening lines like 'In today's fast-paced world' or 'In the digital age'\n"
+                            "- No bullet-point summaries at the end\n"
+                            "- Vary sentence length. Mix short punchy sentences with longer ones. Use contractions (it's, don't, you're)\n"
+                            "- Write with a specific point of view — take a stance, have an opinion\n"
+                            "- Use concrete examples, numbers, and specifics rather than vague generalisations\n"
+                            "- Sound like you have actually done this, not researched it\n"
+                            "- Never mention AI, algorithms, or that this content was generated"
+                        )
                     },
                     {
                         "role": "user",
-                        "content": f"Write {style_desc} about '{topic}' in a {tone} tone. Target length: ~{max_tokens} words. Make it genuinely useful and engaging."
+                        "content": f"Write {style_desc} about '{topic}' in a {tone} tone. Target length: ~{max_tokens} words. Open with something specific and interesting — not a definition or generic statement about the topic's importance."
                     }
                 ],
                 "max_tokens": max_tokens + 200
@@ -338,6 +350,35 @@ async def get_pricing():
         "stripe_configured": bool(STRIPE_SECRET_KEY)
     }
 
+@app.get("/editor")
+async def editor_page():
+    """Web editor — logged-in users write content here without touching the API"""
+    editor_path = pathlib.Path("editor.html")
+    if editor_path.exists():
+        return FileResponse("editor.html", media_type="text/html")
+    raise HTTPException(status_code=404, detail="Editor not found")
+
+@app.post("/login")
+async def login_with_key(request: Request):
+    """Validate an API key and return customer info for the web editor session"""
+    body = await request.json()
+    api_key = body.get("api_key", "").strip()
+    if not api_key:
+        raise HTTPException(status_code=400, detail="API key required")
+    customer = get_customer_by_api_key(api_key)
+    if not customer:
+        raise HTTPException(status_code=403, detail="Invalid API key")
+    if customer.get("status") != "active":
+        raise HTTPException(status_code=403, detail="Subscription not active")
+    return {
+        "status": "success",
+        "email": customer["email"],
+        "tier": customer["tier"],
+        "articles_used": customer.get("articles_used", 0),
+        "articles_limit": customer.get("articles_limit", 50),
+        "remaining": customer.get("articles_limit", 50) - customer.get("articles_used", 0)
+    }
+
 @app.get("/health")
 async def health():
     return {
@@ -355,8 +396,8 @@ async def success_page(session_id: str = ""):
 h1{color:#4f46e5}p{color:#555;line-height:1.6}.btn{background:#4f46e5;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;display:inline-block;margin-top:20px}</style></head>
 <body><h1>✅ You're in!</h1>
 <p>Your WriteAI subscription is active. Your API key is being generated and will arrive in your inbox within 2 minutes.</p>
-<p>Check your email for your API key and getting started guide.</p>
-<a href="/pricing" class="btn">View Documentation</a></body></html>"""
+<p>Within two minutes of checkout, your API key will arrive by email. Paste it into the editor to start generating content immediately.</p>
+<a href="/editor" class="btn">Open the editor</a></body></html>"""
     return HTMLResponse(content=html)
 
 # Admin endpoints (protected)
