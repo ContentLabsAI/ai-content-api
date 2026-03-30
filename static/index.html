@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WriteAI - Free AI Content Generator</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0f0f0f; color: #fff; min-height: 100vh; }
+  .hero { text-align: center; padding: 60px 20px 40px; }
+  .hero h1 { font-size: 3rem; font-weight: 800; background: linear-gradient(135deg, #a78bfa, #60a5fa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 12px; }
+  .hero p { color: #9ca3af; font-size: 1.2rem; margin-bottom: 8px; }
+  .free-badge { display: inline-block; background: #1a1a2e; border: 1px solid #a78bfa; color: #a78bfa; padding: 4px 14px; border-radius: 20px; font-size: 0.85rem; margin-bottom: 40px; }
+  .container { max-width: 860px; margin: 0 auto; padding: 0 20px 60px; }
+  .card { background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 16px; padding: 32px; margin-bottom: 24px; }
+  label { display: block; color: #9ca3af; font-size: 0.85rem; margin-bottom: 8px; font-weight: 500; letter-spacing: 0.05em; text-transform: uppercase; }
+  input, select, textarea { width: 100%; background: #111; border: 1px solid #333; border-radius: 10px; color: #fff; padding: 12px 16px; font-size: 1rem; outline: none; transition: border-color 0.2s; }
+  input:focus, select:focus, textarea:focus { border-color: #a78bfa; }
+  select option { background: #1a1a1a; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+  .field { margin-bottom: 16px; }
+  .generate-btn { width: 100%; padding: 16px; background: linear-gradient(135deg, #7c3aed, #2563eb); border: none; border-radius: 10px; color: #fff; font-size: 1.1rem; font-weight: 700; cursor: pointer; transition: opacity 0.2s, transform 0.1s; margin-top: 8px; }
+  .generate-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+  .generate-btn:active { transform: translateY(0); }
+  .generate-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+  .counter { text-align: center; color: #6b7280; font-size: 0.9rem; margin-bottom: 20px; }
+  .counter span { color: #a78bfa; font-weight: 700; }
+  .output { background: #111; border: 1px solid #2a2a2a; border-radius: 10px; padding: 20px; min-height: 200px; white-space: pre-wrap; line-height: 1.8; color: #e5e7eb; font-size: 0.95rem; display: none; }
+  .output.visible { display: block; }
+  .output-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+  .copy-btn { background: #2a2a2a; border: 1px solid #3a3a3a; color: #9ca3af; padding: 6px 14px; border-radius: 6px; cursor: pointer; font-size: 0.85rem; transition: all 0.2s; }
+  .copy-btn:hover { background: #333; color: #fff; }
+  .spinner { display: none; text-align: center; padding: 40px; color: #6b7280; }
+  .spinner.visible { display: block; }
+  .upgrade-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 100; align-items: center; justify-content: center; }
+  .upgrade-modal.visible { display: flex; }
+  .modal-card { background: #1a1a1a; border: 1px solid #7c3aed; border-radius: 20px; padding: 40px; max-width: 480px; width: 90%; text-align: center; }
+  .modal-card h2 { font-size: 1.8rem; margin-bottom: 12px; }
+  .modal-card p { color: #9ca3af; margin-bottom: 24px; }
+  .plan { background: #111; border: 1px solid #333; border-radius: 12px; padding: 20px; margin-bottom: 12px; cursor: pointer; transition: border-color 0.2s; text-align: left; }
+  .plan:hover { border-color: #7c3aed; }
+  .plan h3 { font-size: 1.1rem; margin-bottom: 4px; }
+  .plan .price { color: #a78bfa; font-size: 1.5rem; font-weight: 700; }
+  .plan .desc { color: #6b7280; font-size: 0.85rem; margin-top: 4px; }
+  .modal-close { margin-top: 16px; background: none; border: none; color: #6b7280; cursor: pointer; font-size: 0.9rem; text-decoration: underline; }
+  .features { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 40px; }
+  .feature { text-align: center; padding: 20px; background: #1a1a1a; border-radius: 12px; }
+  .feature .icon { font-size: 2rem; margin-bottom: 10px; }
+  .feature h3 { font-size: 0.95rem; margin-bottom: 6px; }
+  .feature p { color: #6b7280; font-size: 0.82rem; }
+  @media (max-width: 600px) { .grid-2 { grid-template-columns: 1fr; } .features { grid-template-columns: 1fr; } .hero h1 { font-size: 2rem; } }
+  .error-msg { color: #f87171; background: #1f0a0a; border: 1px solid #7f1d1d; border-radius: 8px; padding: 12px 16px; margin-top: 12px; display: none; }
+  .error-msg.visible { display: block; }
+  .tone-tag { display: inline-block; background: #1a1a2e; border: 1px solid #2a2a3e; color: #9ca3af; padding: 3px 10px; border-radius: 12px; font-size: 0.78rem; margin: 2px; cursor: pointer; transition: all 0.2s; }
+  .tone-tag.active { background: #2e1065; border-color: #7c3aed; color: #a78bfa; }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <h1>WriteAI</h1>
+  <p>Generate professional blog posts, marketing copy & more in seconds</p>
+  <div class="free-badge">✦ 3 free articles — no signup required</div>
+</div>
+
+<div class="container">
+  <div class="counter">
+    Articles used: <span id="usedCount">0</span> / 3 free &nbsp;·&nbsp; 
+    <a href="#" onclick="showUpgrade()" style="color:#a78bfa; text-decoration:none;">Upgrade for unlimited →</a>
+  </div>
+
+  <div class="card">
+    <div class="field">
+      <label>Topic or Title</label>
+      <input type="text" id="topic" placeholder="e.g. 10 ways AI is changing content marketing" />
+    </div>
+    <div class="grid-2">
+      <div class="field">
+        <label>Content Type</label>
+        <select id="style">
+          <option value="blog">Blog Post</option>
+          <option value="marketing">Marketing Copy</option>
+          <option value="social">Social Media Post</option>
+          <option value="email">Email Newsletter</option>
+          <option value="product">Product Description</option>
+          <option value="seo">SEO Article</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Length</label>
+        <select id="length">
+          <option value="short">Short (~300 words)</option>
+          <option value="medium" selected>Medium (~600 words)</option>
+          <option value="long">Long (~1000 words)</option>
+        </select>
+      </div>
+    </div>
+    <div class="field">
+      <label>Tone</label>
+      <div id="toneSelector">
+        <span class="tone-tag active" data-tone="professional">Professional</span>
+        <span class="tone-tag" data-tone="casual">Casual</span>
+        <span class="tone-tag" data-tone="persuasive">Persuasive</span>
+        <span class="tone-tag" data-tone="humorous">Humorous</span>
+        <span class="tone-tag" data-tone="authoritative">Authoritative</span>
+        <span class="tone-tag" data-tone="friendly">Friendly</span>
+      </div>
+    </div>
+    <button class="generate-btn" onclick="generate()" id="genBtn">✦ Generate Content — Free</button>
+    <div class="error-msg" id="errorMsg"></div>
+  </div>
+
+  <div class="card" id="outputCard" style="display:none">
+    <div class="output-header">
+      <label style="margin:0">Generated Content</label>
+      <button class="copy-btn" onclick="copyOutput()">Copy</button>
+    </div>
+    <div class="spinner" id="spinner">Generating your content...</div>
+    <div class="output" id="output"></div>
+  </div>
+
+  <div class="features">
+    <div class="feature">
+      <div class="icon">⚡</div>
+      <h3>Instant Generation</h3>
+      <p>Professional content in under 5 seconds, powered by GPT-3.5</p>
+    </div>
+    <div class="feature">
+      <div class="icon">🎯</div>
+      <h3>SEO Optimised</h3>
+      <p>Content structured for search engines and human readers</p>
+    </div>
+    <div class="feature">
+      <div class="icon">💸</div>
+      <h3>10× Cheaper</h3>
+      <p>vs. human writers. From £9.99/month for unlimited articles</p>
+    </div>
+  </div>
+</div>
+
+<!-- Upgrade Modal -->
+<div class="upgrade-modal" id="upgradeModal">
+  <div class="modal-card">
+    <h2>🔒 Free limit reached</h2>
+    <p>You've used your 3 free articles. Upgrade for unlimited generation.</p>
+    <div class="plan" onclick="checkout('basic')">
+      <h3>Basic</h3>
+      <div class="price">£9.99<span style="font-size:1rem;color:#6b7280">/mo</span></div>
+      <div class="desc">50 articles/month · All content types · API access</div>
+    </div>
+    <div class="plan" onclick="checkout('pro')" style="border-color:#7c3aed">
+      <h3>Pro ⭐</h3>
+      <div class="price">£29.99<span style="font-size:1rem;color:#6b7280">/mo</span></div>
+      <div class="desc">200 articles/month · Priority generation · Custom tones</div>
+    </div>
+    <div class="plan" onclick="checkout('enterprise')">
+      <h3>Enterprise</h3>
+      <div class="price">£99.99<span style="font-size:1rem;color:#6b7280">/mo</span></div>
+      <div class="desc">Unlimited articles · Dedicated support · Custom integration</div>
+    </div>
+    <button class="modal-close" onclick="closeUpgrade()">Maybe later</button>
+  </div>
+</div>
+
+<script>
+  let usedCount = parseInt(localStorage.getItem('writeai_used') || '0');
+  let selectedTone = 'professional';
+  const FREE_LIMIT = 3;
+
+  document.getElementById('usedCount').textContent = usedCount;
+
+  // Tone selector
+  document.querySelectorAll('.tone-tag').forEach(tag => {
+    tag.addEventListener('click', () => {
+      document.querySelectorAll('.tone-tag').forEach(t => t.classList.remove('active'));
+      tag.classList.add('active');
+      selectedTone = tag.dataset.tone;
+    });
+  });
+
+  async function generate() {
+    const topic = document.getElementById('topic').value.trim();
+    if (!topic) {
+      showError('Please enter a topic first.');
+      return;
+    }
+
+    if (usedCount >= FREE_LIMIT) {
+      showUpgrade();
+      return;
+    }
+
+    const btn = document.getElementById('genBtn');
+    const spinner = document.getElementById('spinner');
+    const output = document.getElementById('output');
+    const outputCard = document.getElementById('outputCard');
+    const errorMsg = document.getElementById('errorMsg');
+
+    btn.disabled = true;
+    btn.textContent = 'Generating...';
+    errorMsg.classList.remove('visible');
+    outputCard.style.display = 'block';
+    spinner.classList.add('visible');
+    output.classList.remove('visible');
+    output.textContent = '';
+
+    try {
+      const response = await fetch('/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          topic,
+          style: document.getElementById('style').value,
+          length: document.getElementById('length').value,
+          tone: selectedTone
+        })
+      });
+
+      const data = await response.json();
+      spinner.classList.remove('visible');
+
+      if (data.status === 'success') {
+        output.textContent = data.content;
+        output.classList.add('visible');
+        usedCount++;
+        localStorage.setItem('writeai_used', usedCount);
+        document.getElementById('usedCount').textContent = usedCount;
+        if (usedCount >= FREE_LIMIT) {
+          btn.textContent = '🔒 Upgrade for More Articles';
+        } else {
+          btn.textContent = `✦ Generate Content — ${FREE_LIMIT - usedCount} free left`;
+          btn.disabled = false;
+        }
+      } else {
+        showError(data.error || 'Generation failed. Please try again.');
+        btn.textContent = '✦ Generate Content — Free';
+        btn.disabled = false;
+      }
+    } catch (e) {
+      spinner.classList.remove('visible');
+      showError('Connection error. Please try again.');
+      btn.textContent = '✦ Generate Content — Free';
+      btn.disabled = false;
+    }
+  }
+
+  function showError(msg) {
+    const el = document.getElementById('errorMsg');
+    el.textContent = msg;
+    el.classList.add('visible');
+  }
+
+  function copyOutput() {
+    const text = document.getElementById('output').textContent;
+    navigator.clipboard.writeText(text).then(() => {
+      const btn = document.querySelector('.copy-btn');
+      btn.textContent = 'Copied!';
+      setTimeout(() => btn.textContent = 'Copy', 2000);
+    });
+  }
+
+  function showUpgrade() {
+    document.getElementById('upgradeModal').classList.add('visible');
+  }
+
+  function closeUpgrade() {
+    document.getElementById('upgradeModal').classList.remove('visible');
+  }
+
+  async function checkout(tier) {
+    const email = prompt('Enter your email to continue:');
+    if (!email) return;
+    try {
+      const res = await fetch('/subscription', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, tier, name: '' })
+      });
+      const data = await res.json();
+      if (data.checkout_url) {
+        window.location.href = data.checkout_url;
+      }
+    } catch (e) {
+      alert('Error creating checkout. Please try again.');
+    }
+  }
+
+  document.getElementById('topic').addEventListener('keydown', e => {
+    if (e.key === 'Enter') generate();
+  });
+</script>
+</body>
+</html>
