@@ -1389,18 +1389,16 @@
 </div>
 
 <script>
-  // If GSAP CDN failed, make page fully visible immediately
-  if (typeof gsap === 'undefined' || typeof ScrollTrigger === 'undefined') {
-    console.warn('GSAP not loaded - showing page without animations');
-  } else {
+  // If GSAP CDN failed, page already has opacity:1 on everything — no action needed
+  if (typeof gsap !== 'undefined' && typeof ScrollTrigger !== 'undefined') {
 
   gsap.registerPlugin(ScrollTrigger);
 
-  // Set initial hidden state via JS (not CSS) - so page is visible if GSAP fails
+  // Only hide hero elements (they use gsap.to() timeline, not gsap.from())
   gsap.set(["#hero-badge","#hero-h1","#hero-sub","#hero-actions"], { opacity: 0, y: 30 });
-  document.querySelectorAll('[data-anim="fade-up"]').forEach(el => gsap.set(el, { opacity: 0, y: 40 }));
-  document.querySelectorAll('[data-anim="fade-left"]').forEach(el => gsap.set(el, { opacity: 0, x: -30 }));
-  document.querySelectorAll('.feature-tile, .plan-card, .tl-item, .faq-item').forEach(el => gsap.set(el, { opacity: 0, y: 20 }));
+
+  // NOTE: do NOT gsap.set scroll elements — gsap.from() handles their initial state
+  // Setting them to 0 first causes visible→invisible→visible flicker
 
   // NAV scroll effect
   ScrollTrigger.create({
@@ -1529,18 +1527,6 @@
   });
 
 
-  // Safety fallback: if ScrollTrigger animations never fire (slow connection, mobile, etc.)
-  // force everything visible after 2.5s
-  setTimeout(function() {
-    var els = document.querySelectorAll('[data-anim], .feature-tile, .plan-card, .tl-item, .faq-item, #hero-badge, #hero-h1, #hero-sub, #hero-actions, .stat');
-    els.forEach(function(el) {
-      if (parseFloat(getComputedStyle(el).opacity) < 0.5) {
-        el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
-        el.style.opacity = '1';
-        el.style.transform = 'none';
-      }
-    });
-  }, 2500);
   } // end GSAP block
 </script>
 
