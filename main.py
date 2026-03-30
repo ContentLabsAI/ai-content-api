@@ -156,13 +156,19 @@ async def generate_ai_content(topic: str, style: str = "blog", length: str = "me
 async def root():
     return {
         "service": "AI Content API",
-        "version": "0.1.0",
+        "version": "0.3.0",
         "status": "online",
+        "url": "https://ai-content-api.onrender.com",
+        "documentation": "Send POST to /generate with JSON: {\"topic\":\"your topic\",\"style\":\"blog\",\"length\":\"medium\"}",
         "endpoints": {
             "/generate": "POST - Generate content",
             "/subscription": "POST - Create subscription",
-            "/health": "GET - Health check"
-        }
+            "/pricing": "GET - Pricing plans",
+            "/health": "GET - Health check",
+            "/customers": "GET - List customers",
+            "/manual-activate": "POST - Manual activation (admin)"
+        },
+        "stripe": "Test mode active - use card 4242 4242 4242 4242"
     }
 
 @app.post("/generate")
@@ -375,6 +381,24 @@ async def list_customers():
 @app.get("/health")
 async def health_check():
     return {"status": "healthy", "timestamp": "2026-03-29T14:00:00Z"}
+
+# Catch-all for potential path prefix issues
+@app.get("/{full_path:path}")
+async def catch_all(full_path: str):
+    if full_path == "" or full_path == "/":
+        return await root()
+    return {
+        "error": "Endpoint not found",
+        "requested_path": full_path,
+        "available_endpoints": [
+            "/generate (POST)",
+            "/subscription (POST)", 
+            "/pricing (GET)",
+            "/health (GET)",
+            "/customers (GET)",
+            "/manual-activate (POST)"
+        ]
+    }
 
 if __name__ == "__main__":
     import uvicorn
