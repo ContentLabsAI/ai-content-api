@@ -530,18 +530,20 @@
 <div id="login-screen">
   <div class="login-box">
     <div class="login-logo">Write<span>AI</span></div>
-    <div class="login-tagline">Enter your API key to start writing</div>
+    <div class="login-tagline">Sign in to your account</div>
 
-    <label class="field-label" for="login-key">Your API key</label>
-    <input class="field-input" type="password" id="login-key" placeholder="wai_..." autocomplete="off">
+    <label class="field-label" for="login-email">Email address</label>
+    <input class="field-input" type="email" id="login-email" placeholder="you@example.com" autocomplete="email">
 
-    <p class="login-error" id="login-error">Invalid API key. Check your welcome email and try again.</p>
+    <label class="field-label" for="login-password">Password</label>
+    <input class="field-input" type="password" id="login-password" placeholder="Your password" autocomplete="current-password">
+
+    <p class="login-error" id="login-error">Incorrect email or password.</p>
 
     <button class="btn-full" id="login-btn" onclick="doLogin()">Sign in</button>
 
     <p class="login-help">
-      Don't have a key? <a href="/#pricing">Get one from £9.99/month</a><br>
-      <span style="margin-top:6px;display:block">Your key was emailed after checkout.</span>
+      No account? <a href="/#pricing">Get started from £9.99/month</a>
     </p>
   </div>
 </div>
@@ -639,7 +641,7 @@
 <div class="toast" id="toast"></div>
 
 <script>
-  let apiKey = null;
+  let sessionToken = null;
   let currentStyle = 'blog';
   let currentLength = 'short';
   let rawContent = '';
@@ -647,30 +649,31 @@
   // ── AUTH ──
 
   async function doLogin() {
-    const key = document.getElementById('login-key').value.trim();
+    const email = document.getElementById('login-email').value.trim();
+    const password = document.getElementById('login-password').value;
     const errEl = document.getElementById('login-error');
     const btn = document.getElementById('login-btn');
 
-    if (!key) return;
+    if (!email || !password) return;
 
     errEl.style.display = 'none';
     btn.textContent = 'Signing in...';
     btn.disabled = true;
 
     try {
-      const res = await fetch('/login', {
+      const res = await fetch('/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ api_key: key })
+        body: JSON.stringify({ email, password })
       });
       const data = await res.json();
 
       if (res.ok) {
-        apiKey = key;
-        sessionStorage.setItem('wai_key', key);
-        showApp(data);
+        sessionToken = data.session_token;
+        sessionStorage.setItem('wai_session', sessionToken);
+        showApp(data.user);
       } else {
-        errEl.textContent = data.detail || 'Invalid API key.';
+        errEl.textContent = data.detail || 'Incorrect email or password.';
         errEl.style.display = 'block';
         btn.textContent = 'Sign in';
         btn.disabled = false;
@@ -688,32 +691,54 @@
     document.getElementById('app-screen').style.display = 'block';
     document.getElementById('user-email').textContent = userData.email;
     updateUsage(userData.articles_used, userData.articles_limit);
+    if (userData.status !== 'active') {
+      document.getElementById('gen-hint').textContent = 'No active subscription. Visit /pricing to subscribe.';
+      document.getElementById('gen-btn').disabled = true;
+    }
   }
 
   function updateUsage(used, limit) {
     document.getElementById('usage-pill').textContent = `${used} / ${limit} articles used`;
   }
 
-  function signOut() {
-    sessionStorage.removeItem('wai_key');
-    apiKey = null;
+  async function signOut() {
+    if (sessionToken) {
+      fetch('/auth/logout', { method: 'POST', headers: { 'X-Session-Token': sessionToken } });
+    }
+    sessionStorage.removeItem('wai_session');
+    sessionToken = null;
     document.getElementById('login-screen').style.display = 'flex';
     document.getElementById('app-screen').style.display = 'none';
-    document.getElementById('login-key').value = '';
+    document.getElementById('login-email').value = '';
+    document.getElementById('login-password').value = '';
   }
 
-  // Auto-login from session
-  window.addEventListener('load', () => {
-    const saved = sessionStorage.getItem('wai_key');
+  // Auto-login from saved session
+  window.addEventListener('load', async () => {
+    // Check if redirected from setup with session in sessionStorage
+    const savedUser = sessionStorage.getItem('wai_user');
+    const saved = sessionStorage.getItem('wai_session');
     if (saved) {
-      document.getElementById('login-key').value = saved;
-      doLogin();
+      sessionToken = saved;
+      // Verify it's still valid
+      try {
+        const res = await fetch('/auth/me', { headers: { 'X-Session-Token': saved } });
+        if (res.ok) {
+          const data = await res.json();
+          showApp(data);
+          return;
+        }
+      } catch(e) {}
+      // Session invalid, clear it
+      sessionStorage.removeItem('wai_session');
     }
   });
 
-  // Enter key on login
-  document.getElementById('login-key').addEventListener('keydown', e => {
-    if (e.key === 'Enter') doLogin();
+  // Enter key on login fields
+  ['login-email', 'login-password'].forEach(id => {
+    document.getElementById(id).addEventListener('keydown', e => {
+      if (e.key === 'Enter') doLogin();
+    });
   });
 
   // ── CONTROLS ──
@@ -763,7 +788,7 @@
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'X-API-Key': apiKey
+          'X-Session-Token': sessionToken
         },
         body: JSON.stringify({ topic, style: currentStyle, length: currentLength, tone })
       });

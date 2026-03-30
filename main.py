@@ -1,18 +1,15 @@
 """
-AI Content Labs - WriteAI API v0.4.0
-FastAPI backend with proper authentication and subscription enforcement
+WriteAI – AI Content Labs
+FastAPI backend v0.5.0
+Auth: email + password. No API key exposure to end users.
 """
-from fastapi import FastAPI, HTTPException, Request, Response, Header, Depends
+from fastapi import FastAPI, HTTPException, Request, Header, Depends
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, HTMLResponse
+from fastapi.staticfiles import StaticFiles
 import pathlib
 from pydantic import BaseModel
-import os
-import json
-import time
-import secrets
-import hashlib
+import os, json, time, secrets, hashlib
 from typing import Optional
 from dotenv import load_dotenv
 import httpx
@@ -20,7 +17,7 @@ import stripe
 
 load_dotenv()
 
-app = FastAPI(title="WriteAI - AI Content Labs", version="0.4.0")
+app = FastAPI(title="WriteAI", version="0.5.0")
 
 app.add_middleware(
     CORSMiddleware,
@@ -30,13 +27,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Config
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
 OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
 STRIPE_SECRET_KEY = os.getenv("STRIPE_SECRET_KEY")
 STRIPE_PUBLISHABLE_KEY = os.getenv("STRIPE_PUBLISHABLE_KEY")
 STRIPE_WEBHOOK_SECRET = os.getenv("STRIPE_WEBHOOK_SECRET")
 ADMIN_SECRET = os.getenv("ADMIN_SECRET", "change-me-in-production")
+BASE_URL = os.getenv("BASE_URL", "http://localhost:8000")
 
 if STRIPE_SECRET_KEY:
     stripe.api_key = STRIPE_SECRET_KEY
@@ -47,43 +44,25 @@ PRICING = {
         "price_id": "price_1TGJmG8AZvg3KupHn8bOh4PE",
         "monthly": 9.99,
         "articles": 50,
-        "features": [
-            "50 AI-generated articles/month",
-            "Up to 1000 words each",
-            "Blog, marketing & social styles",
-            "Standard support",
-            "API access"
-        ]
+        "features": ["50 articles/month", "Up to 1,000 words each", "All content types", "API access", "Standard support"]
     },
     "pro": {
         "name": "Pro",
         "price_id": "price_1TGJnK8AZvg3KupHfXEbvOyl",
         "monthly": 29.99,
         "articles": 200,
-        "features": [
-            "200 AI-generated articles/month",
-            "Up to 2000 words each",
-            "6 content styles + custom tones",
-            "Priority support",
-            "Advanced API access"
-        ]
+        "features": ["200 articles/month", "Up to 2,000 words each", "All content types", "Custom tones", "Priority support"]
     },
     "enterprise": {
         "name": "Enterprise",
         "price_id": "price_1TGJno8AZvg3KupH7LfjykRe",
         "monthly": 99.99,
         "articles": 1000,
-        "features": [
-            "1000+ articles/month",
-            "Unlimited length",
-            "All styles + brand voice",
-            "Dedicated support",
-            "Custom integrations"
-        ]
+        "features": ["1,000+ articles/month", "Unlimited length", "Brand voice", "Custom integrations", "Dedicated support"]
     }
 }
 
-# --- Models ---
+# ── Models ──
 
 class ContentRequest(BaseModel):
     topic: str
@@ -96,50 +75,72 @@ class SubscriptionRequest(BaseModel):
     tier: str = "basic"
     name: Optional[str] = None
 
-# --- Database helpers ---
+class RegisterRequest(BaseModel):
+    email: str
+    password: str
+    name: Optional[str] = None
+
+class LoginRequest(BaseModel):
+    email: str
+    password: str
+
+class ChangePasswordRequest(BaseModel):
+    current_password: str
+    new_password: str
+
+# ── Database ──
+
+DB_PATH = "database.json"
 
 def load_db():
     try:
-        with open("database.json", "r") as f:
+        with open(DB_PATH) as f:
             return json.load(f)
     except:
-        return {"customers": {}, "api_keys": {}}
+        return {"users": {}, "sessions": {}}
 
 def save_db(data):
-    with open("database.json", "w") as f:
+    with open(DB_PATH, "w") as f:
         json.dump(data, f, indent=2)
 
-def generate_api_key() -> str:
-    return "wai_" + secrets.token_urlsafe(32)
+def hash_password(password: str) -> str:
+    salt = "writeai_salt_2026"  # in production use bcrypt
+    return hashlib.sha256(f"{salt}{password}".encode()).hexdigest()
 
-def get_customer_by_api_key(api_key: str) -> Optional[dict]:
+def make_session_token() -> str:
+    return secrets.token_urlsafe(32)
+
+def get_user_by_email(email: str) -> Optional[dict]:
     db = load_db()
-    key_hash = hashlib.sha256(api_key.encode()).hexdigest()
-    customer_email = db.get("api_keys", {}).get(key_hash)
-    if customer_email:
-        return db.get("customers", {}).get(customer_email)
-    return None
+    return db.get("users", {}).get(email.lower())
 
-# --- Auth dependency ---
+def get_user_by_session(token: str) -> Optional[dict]:
+    db = load_db()
+    session = db.get("sessions", {}).get(token)
+    if not session:
+        return None
+    if session.get("expires_at", 0) < time.time():
+        return None
+    email = session.get("email")
+    return db.get("users", {}).get(email)
 
-async def require_api_key(x_api_key: Optional[str] = Header(None)) -> dict:
-    if not x_api_key:
-        raise HTTPException(
-            status_code=401,
-            detail="API key required. Include X-API-Key header. Get one at /pricing"
-        )
-    customer = get_customer_by_api_key(x_api_key)
-    if not customer:
-        raise HTTPException(status_code=403, detail="Invalid API key")
-    if customer.get("status") != "active":
-        raise HTTPException(status_code=403, detail="Subscription not active")
-    return customer
+# ── Auth dependency ──
+
+async def require_session(x_session_token: Optional[str] = Header(None)) -> dict:
+    if not x_session_token:
+        raise HTTPException(status_code=401, detail="Not logged in")
+    user = get_user_by_session(x_session_token)
+    if not user:
+        raise HTTPException(status_code=401, detail="Session expired. Please log in again.")
+    if user.get("status") != "active":
+        raise HTTPException(status_code=403, detail="No active subscription. Please subscribe to continue.")
+    return user
 
 async def require_admin(x_admin_secret: Optional[str] = Header(None)):
     if x_admin_secret != ADMIN_SECRET:
-        raise HTTPException(status_code=403, detail="Admin access required")
+        raise HTTPException(status_code=403, detail="Forbidden")
 
-# --- Content generation ---
+# ── Content generation ──
 
 async def generate_ai_content(topic: str, style: str = "blog", length: str = "medium", tone: str = "professional") -> str:
     if not OPENROUTER_API_KEY:
@@ -149,12 +150,12 @@ async def generate_ai_content(topic: str, style: str = "blog", length: str = "me
     max_tokens = length_map.get(length, 800)
 
     style_instructions = {
-        "blog": "a well-structured blog post with an engaging intro, clear sections with H2 headings, and a conclusion",
-        "marketing": "persuasive marketing copy with a strong hook, benefit-focused language, and a clear call-to-action",
-        "social": "punchy social media content with short paragraphs, emojis where appropriate, and shareable insights",
-        "email": "an email newsletter with a compelling subject line suggestion, scannable sections, and clear next steps",
-        "product": "a detailed product description highlighting features, benefits, and use cases",
-        "seo": "SEO-optimised content with natural keyword usage, meta description suggestion, and clear structure"
+        "blog": "a blog post with a strong opening, clear sections, and a definite point of view",
+        "marketing": "marketing copy with a direct hook, specific benefit language, and a clear call to action",
+        "social": "social media content that is punchy, direct, and shareable. Short paragraphs. No filler",
+        "email": "an email newsletter with a subject line suggestion, scannable sections, and a clear next step",
+        "product": "a product description that focuses on concrete features, real benefits, and who it is for",
+        "seo": "an SEO article with a clear structure, natural keyword usage, and a meta description suggestion"
     }
 
     style_desc = style_instructions.get(style, style_instructions["blog"])
@@ -165,7 +166,7 @@ async def generate_ai_content(topic: str, style: str = "blog", length: str = "me
             headers={
                 "Authorization": f"Bearer {OPENROUTER_API_KEY}",
                 "HTTP-Referer": "https://writeai.contentlabs.ai",
-                "X-Title": "WriteAI Content Generator"
+                "X-Title": "WriteAI"
             },
             json={
                 "model": "openai/gpt-4o-mini",
@@ -173,96 +174,176 @@ async def generate_ai_content(topic: str, style: str = "blog", length: str = "me
                     {
                         "role": "system",
                         "content": (
-                            "You are a skilled human writer. Write exactly like a real person — someone who has genuine experience and opinions on the topic. "
-                            "CRITICAL RULES:\n"
-                            "- Never use these words: delve, tapestry, unpack, leverage, game-changer, transformative, groundbreaking, spearhead, foster, multifaceted, nuanced, holistic, paradigm, synergy, robust, scalable, streamline, empower, unlock, revolutionize\n"
-                            "- Never start sentences with 'In conclusion', 'In summary', 'It's worth noting', 'It's important to', 'This is a'\n"
-                            "- Never write generic opening lines like 'In today's fast-paced world' or 'In the digital age'\n"
-                            "- No bullet-point summaries at the end\n"
-                            "- Vary sentence length. Mix short punchy sentences with longer ones. Use contractions (it's, don't, you're)\n"
-                            "- Write with a specific point of view — take a stance, have an opinion\n"
-                            "- Use concrete examples, numbers, and specifics rather than vague generalisations\n"
-                            "- Sound like you have actually done this, not researched it\n"
-                            "- Never mention AI, algorithms, or that this content was generated"
+                            "You are a professional human writer with genuine opinions and real experience. "
+                            "Write exactly how a skilled journalist or blogger writes, not how a language model writes.\n\n"
+                            "BANNED WORDS (never use): delve, tapestry, nuanced, multifaceted, robust, seamless, leverage, utilize, facilitate, landscape (metaphorical), ecosystem, realm, crucial, vital, groundbreaking, transformative, revolutionary, streamline, empower, unlock, spearhead, foster, paradigm, synergy, holistic, scalable\n\n"
+                            "BANNED OPENERS: 'Notably,', 'Importantly,', 'Certainly,', 'Interestingly,', 'Of course,', 'Ultimately,', 'That said,', 'Moreover,', 'Furthermore,', 'Building on this,', 'It is worth noting', 'It is important to', 'When it comes to', 'At the end of the day', 'In conclusion', 'In summary', 'To summarize'\n\n"
+                            "BANNED PUNCTUATION: no em dashes, no semicolons for rhythm\n\n"
+                            "BANNED STRUCTURES: no rhetorical question openers, no inspirational closing sentences, no 'In conclusion' paragraphs, no sandwich paragraphs that restate the opener\n\n"
+                            "REQUIRED:\n"
+                            "- Take a clear position. Have an opinion. Do not hedge unless genuinely warranted\n"
+                            "- Vary sentence length dramatically. Short sentences land hard. Longer ones build rhythm\n"
+                            "- Use specific concrete detail: real numbers, real scenarios. Not 'many businesses' but 'a shop with five staff'\n"
+                            "- Write 'use' not 'utilize', 'show' not 'demonstrate', 'help' not 'facilitate'\n"
+                            "- Leave some things implicit. Do not explain every point twice\n"
+                            "- Contractions are fine (it's, don't, you're, they've)\n"
+                            "- Paragraphs can be one sentence if that's what fits\n"
+                            "- No preemptive disclaimers. No excessive both-sidesing\n"
+                            "- Never mention AI or that this was generated"
                         )
                     },
                     {
                         "role": "user",
-                        "content": f"Write {style_desc} about '{topic}' in a {tone} tone. Target length: ~{max_tokens} words. Open with something specific and interesting — not a definition or generic statement about the topic's importance."
+                        "content": f"Write {style_desc} about '{topic}' in a {tone} tone. Target length: roughly {max_tokens} words. Open with something specific and concrete, not a definition or a statement about the topic's importance."
                     }
                 ],
                 "max_tokens": max_tokens + 200
             }
         )
         response.raise_for_status()
-        data = response.json()
-        return data["choices"][0]["message"]["content"]
+        return response.json()["choices"][0]["message"]["content"]
 
-# --- Routes ---
+# ── Routes: Auth ──
 
-@app.get("/")
-async def root():
-    static_path = pathlib.Path("landing.html")
-    if static_path.exists():
-        return FileResponse("landing.html", media_type="text/html")
-    return {"name": "WriteAI", "version": "0.4.0", "docs": "/pricing"}
+@app.post("/auth/register")
+async def register(req: RegisterRequest):
+    """Register with email + password. Account inactive until payment."""
+    if len(req.password) < 8:
+        raise HTTPException(status_code=400, detail="Password must be at least 8 characters")
+
+    email = req.email.lower().strip()
+    db = load_db()
+
+    if email in db.get("users", {}):
+        raise HTTPException(status_code=409, detail="An account with that email already exists. Please log in.")
+
+    db.setdefault("users", {})[email] = {
+        "email": email,
+        "name": req.name or "",
+        "password_hash": hash_password(req.password),
+        "status": "pending",  # becomes "active" after payment
+        "tier": None,
+        "articles_used": 0,
+        "articles_limit": 0,
+        "created_at": time.time(),
+        "stripe_session_id": None,
+    }
+    save_db(db)
+    return {"status": "success", "message": "Account created. Complete your subscription to start writing."}
+
+@app.post("/auth/login")
+async def login(req: LoginRequest):
+    """Log in and receive a session token. No API key needed."""
+    email = req.email.lower().strip()
+    user = get_user_by_email(email)
+
+    if not user or user.get("password_hash") != hash_password(req.password):
+        raise HTTPException(status_code=401, detail="Incorrect email or password")
+
+    token = make_session_token()
+    db = load_db()
+    db.setdefault("sessions", {})[token] = {
+        "email": email,
+        "expires_at": time.time() + (30 * 24 * 3600)  # 30 days
+    }
+    save_db(db)
+
+    return {
+        "status": "success",
+        "session_token": token,
+        "user": {
+            "email": user["email"],
+            "name": user.get("name", ""),
+            "tier": user.get("tier"),
+            "status": user.get("status"),
+            "articles_used": user.get("articles_used", 0),
+            "articles_limit": user.get("articles_limit", 0),
+        }
+    }
+
+@app.post("/auth/logout")
+async def logout(x_session_token: Optional[str] = Header(None)):
+    if x_session_token:
+        db = load_db()
+        db.get("sessions", {}).pop(x_session_token, None)
+        save_db(db)
+    return {"status": "success"}
+
+@app.get("/auth/me")
+async def get_me(user: dict = Depends(require_session)):
+    return {
+        "email": user["email"],
+        "name": user.get("name", ""),
+        "tier": user.get("tier"),
+        "status": user.get("status"),
+        "articles_used": user.get("articles_used", 0),
+        "articles_limit": user.get("articles_limit", 0),
+        "remaining": user.get("articles_limit", 0) - user.get("articles_used", 0)
+    }
+
+# ── Routes: Content ──
 
 @app.post("/generate")
-async def generate_content(request: ContentRequest, customer: dict = Depends(require_api_key)):
-    """Generate content - requires valid API key from active subscription"""
-    start_time = time.time()
+async def generate_content(request: ContentRequest, user: dict = Depends(require_session)):
+    """Generate content. Requires active subscription session."""
+    articles_used = user.get("articles_used", 0)
+    articles_limit = user.get("articles_limit", 0)
 
-    # Check usage limits
-    articles_used = customer.get("articles_used", 0)
-    articles_limit = customer.get("articles_limit", 50)
     if articles_used >= articles_limit:
         raise HTTPException(
             status_code=429,
-            detail=f"Monthly limit reached ({articles_used}/{articles_limit}). Upgrade your plan at /pricing"
+            detail=f"You've used all {articles_limit} articles this month. Upgrade your plan to continue."
         )
 
-    content = await generate_ai_content(
-        topic=request.topic,
-        style=request.style,
-        length=request.length,
-        tone=request.tone
-    )
+    start = time.time()
+    content = await generate_ai_content(request.topic, request.style, request.length, request.tone)
 
-    # Track usage
+    # Update usage
     db = load_db()
-    email = customer["email"]
-    if email in db.get("customers", {}):
-        db["customers"][email]["articles_used"] = articles_used + 1
+    if user["email"] in db.get("users", {}):
+        db["users"][user["email"]]["articles_used"] = articles_used + 1
         save_db(db)
 
     return {
         "status": "success",
         "content": content,
-        "metadata": {
-            "topic": request.topic,
-            "style": request.style,
-            "length": request.length,
-            "tone": request.tone
-        },
         "usage": {
             "articles_used": articles_used + 1,
             "articles_limit": articles_limit,
             "remaining": articles_limit - articles_used - 1
         },
-        "time_taken": round(time.time() - start_time, 2)
+        "time_taken": round(time.time() - start, 2)
     }
+
+# ── Routes: Subscriptions ──
 
 @app.post("/subscription")
 async def create_subscription(request: SubscriptionRequest):
-    """Create a Stripe checkout session for subscription"""
+    """Create Stripe checkout. User can be registered or not yet."""
     if not STRIPE_SECRET_KEY:
         raise HTTPException(status_code=503, detail="Payment processing unavailable")
 
     tier = request.tier.lower()
     if tier not in PRICING:
         tier = "basic"
-
     tier_info = PRICING[tier]
+
+    # Ensure user account exists (create one if they're going straight to checkout)
+    email = request.email.lower().strip()
+    db = load_db()
+    if email not in db.get("users", {}):
+        db.setdefault("users", {})[email] = {
+            "email": email,
+            "name": request.name or "",
+            "password_hash": None,  # will be set when they create password after payment
+            "status": "pending",
+            "tier": None,
+            "articles_used": 0,
+            "articles_limit": 0,
+            "created_at": time.time(),
+            "stripe_session_id": None,
+        }
+        save_db(db)
 
     try:
         checkout_session = stripe.checkout.Session.create(
@@ -272,7 +353,7 @@ async def create_subscription(request: SubscriptionRequest):
                     "currency": "gbp",
                     "product_data": {
                         "name": f"WriteAI {tier_info['name']} Plan",
-                        "description": f"{tier_info['articles']} AI-generated articles per month"
+                        "description": f"{tier_info['articles']} articles per month"
                     },
                     "unit_amount": int(tier_info["monthly"] * 100),
                     "recurring": {"interval": "month"},
@@ -280,173 +361,174 @@ async def create_subscription(request: SubscriptionRequest):
                 "quantity": 1,
             }],
             mode="subscription",
-            success_url=f"{os.getenv('BASE_URL', 'https://writeai.contentlabs.ai')}/success?session_id={{CHECKOUT_SESSION_ID}}",
-            cancel_url=f"{os.getenv('BASE_URL', 'https://writeai.contentlabs.ai')}/pricing",
-            customer_email=request.email,
+            success_url=f"{BASE_URL}/setup?session_id={{CHECKOUT_SESSION_ID}}",
+            cancel_url=f"{BASE_URL}/#pricing",
+            customer_email=email,
             metadata={"tier": tier, "customer_name": request.name or ""}
         )
-
-        return {
-            "status": "success",
-            "checkout_url": checkout_session.url,
-            "session_id": checkout_session.id
-        }
-
+        return {"status": "success", "checkout_url": checkout_session.url}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Payment error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/stripe-webhook")
 async def stripe_webhook(request: Request):
-    """Handle Stripe webhook - creates API key on successful payment"""
     if not STRIPE_WEBHOOK_SECRET:
         raise HTTPException(status_code=503, detail="Webhook not configured")
 
     payload = await request.body()
-    sig_header = request.headers.get("stripe-signature")
+    sig = request.headers.get("stripe-signature")
 
     try:
-        event = stripe.Webhook.construct_event(payload, sig_header, STRIPE_WEBHOOK_SECRET)
-    except (ValueError, stripe.error.SignatureVerificationError):
+        event = stripe.Webhook.construct_event(payload, sig, STRIPE_WEBHOOK_SECRET)
+    except Exception:
         raise HTTPException(status_code=400, detail="Invalid webhook")
 
     if event["type"] == "checkout.session.completed":
         session = event["data"]["object"]
-        email = session.get("customer_email", "")
+        email = session.get("customer_email", "").lower()
         tier = session.get("metadata", {}).get("tier", "basic")
         tier_info = PRICING.get(tier, PRICING["basic"])
 
         if email:
             db = load_db()
-            api_key = generate_api_key()
-            key_hash = hashlib.sha256(api_key.encode()).hexdigest()
-
-            db.setdefault("customers", {})[email] = {
+            user = db.get("users", {}).get(email, {})
+            user.update({
                 "email": email,
-                "tier": tier,
                 "status": "active",
-                "stripe_session_id": session.get("id"),
-                "articles_used": 0,
+                "tier": tier,
                 "articles_limit": tier_info["articles"],
-                "created_at": time.time(),
-                "api_key_hash": key_hash
-            }
-            db.setdefault("api_keys", {})[key_hash] = email
+                "articles_used": 0,
+                "stripe_session_id": session.get("id"),
+                "activated_at": time.time()
+            })
+            db.setdefault("users", {})[email] = user
             save_db(db)
+            print(f"Activated: {email} on {tier}")
 
-            print(f"✅ New subscriber: {email} ({tier}) - API key: {api_key[:12]}...")
-            # TODO: Send welcome email with API key
-
-    elif event["type"] in ["customer.subscription.deleted", "customer.subscription.updated"]:
-        # Handle cancellations/changes
+    elif event["type"] in ["customer.subscription.deleted"]:
+        # Handle cancellation
         pass
 
     return {"status": "success"}
 
 @app.get("/pricing")
 async def get_pricing():
-    return {
-        "status": "success",
-        "pricing": PRICING,
-        "stripe_configured": bool(STRIPE_SECRET_KEY)
-    }
-
-@app.get("/editor")
-async def editor_page():
-    """Web editor — logged-in users write content here without touching the API"""
-    editor_path = pathlib.Path("editor.html")
-    if editor_path.exists():
-        return FileResponse("editor.html", media_type="text/html")
-    raise HTTPException(status_code=404, detail="Editor not found")
-
-@app.post("/login")
-async def login_with_key(request: Request):
-    """Validate an API key and return customer info for the web editor session"""
-    body = await request.json()
-    api_key = body.get("api_key", "").strip()
-    if not api_key:
-        raise HTTPException(status_code=400, detail="API key required")
-    customer = get_customer_by_api_key(api_key)
-    if not customer:
-        raise HTTPException(status_code=403, detail="Invalid API key")
-    if customer.get("status") != "active":
-        raise HTTPException(status_code=403, detail="Subscription not active")
-    return {
-        "status": "success",
-        "email": customer["email"],
-        "tier": customer["tier"],
-        "articles_used": customer.get("articles_used", 0),
-        "articles_limit": customer.get("articles_limit", 50),
-        "remaining": customer.get("articles_limit", 50) - customer.get("articles_used", 0)
-    }
+    return {"status": "success", "pricing": PRICING}
 
 @app.get("/health")
 async def health():
-    return {
-        "status": "healthy",
-        "version": "0.4.0",
-        "openrouter": bool(OPENROUTER_API_KEY),
-        "stripe": bool(STRIPE_SECRET_KEY)
-    }
+    return {"status": "healthy", "version": "0.5.0", "openrouter": bool(OPENROUTER_API_KEY), "stripe": bool(STRIPE_SECRET_KEY)}
 
-@app.get("/success")
-async def success_page(session_id: str = ""):
-    html = """<!DOCTYPE html>
-<html><head><title>Welcome to WriteAI</title>
-<style>body{font-family:system-ui,sans-serif;max-width:600px;margin:80px auto;text-align:center;color:#1a1a2e}
-h1{color:#4f46e5}p{color:#555;line-height:1.6}.btn{background:#4f46e5;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;display:inline-block;margin-top:20px}</style></head>
-<body><h1>✅ You're in!</h1>
-<p>Your WriteAI subscription is active. Your API key is being generated and will arrive in your inbox within 2 minutes.</p>
-<p>Within two minutes of checkout, your API key will arrive by email. Paste it into the editor to start generating content immediately.</p>
-<a href="/editor" class="btn">Open the editor</a></body></html>"""
+# ── Pages ──
+
+@app.get("/")
+async def root():
+    p = pathlib.Path("landing.html")
+    if p.exists():
+        return FileResponse("landing.html", media_type="text/html")
+    return {"name": "WriteAI", "version": "0.5.0"}
+
+@app.get("/editor")
+async def editor():
+    p = pathlib.Path("editor.html")
+    if p.exists():
+        return FileResponse("editor.html", media_type="text/html")
+    raise HTTPException(status_code=404)
+
+@app.get("/setup")
+async def setup_page(session_id: str = ""):
+    """After payment: collect password if account doesn't have one yet."""
+    p = pathlib.Path("setup.html")
+    if p.exists():
+        return FileResponse("setup.html", media_type="text/html")
+    # Fallback
+    html = """<!DOCTYPE html><html><head><title>Welcome to WriteAI</title>
+    <style>body{font-family:system-ui,sans-serif;max-width:500px;margin:80px auto;text-align:center;color:#111}
+    h1{font-size:32px;font-weight:800;margin-bottom:12px}p{color:#555;margin-bottom:24px}
+    a{background:#a3e635;color:#000;padding:13px 28px;border-radius:8px;text-decoration:none;font-weight:700}</style></head>
+    <body><h1>You're in.</h1><p>Check your email — your account details are on their way.</p>
+    <a href="/editor">Open the editor</a></body></html>"""
     return HTMLResponse(content=html)
 
-# Admin endpoints (protected)
-@app.post("/admin/activate")
-async def admin_activate(email: str, tier: str, _: None = Depends(require_admin)):
-    """Manually activate a customer (admin only)"""
-    tier_info = PRICING.get(tier, PRICING["basic"])
+@app.post("/auth/set-password")
+async def set_password(request: Request):
+    """Called from the setup page after first payment to set a password."""
+    body = await request.json()
+    email = body.get("email", "").lower().strip()
+    session_id = body.get("session_id", "")
+    password = body.get("password", "")
+
+    if len(password) < 8:
+        raise HTTPException(status_code=400, detail="Password must be at least 8 characters")
+
     db = load_db()
+    user = db.get("users", {}).get(email)
 
-    api_key = generate_api_key()
-    key_hash = hashlib.sha256(api_key.encode()).hexdigest()
+    if not user:
+        raise HTTPException(status_code=404, detail="Account not found")
 
-    db.setdefault("customers", {})[email] = {
+    # Verify session_id matches (basic check)
+    if user.get("stripe_session_id") and user["stripe_session_id"] != session_id:
+        raise HTTPException(status_code=403, detail="Invalid setup link")
+
+    user["password_hash"] = hash_password(password)
+    db["users"][email] = user
+    save_db(db)
+
+    # Auto-login
+    token = make_session_token()
+    db.setdefault("sessions", {})[token] = {
         "email": email,
-        "tier": tier,
-        "status": "active",
-        "articles_used": 0,
-        "articles_limit": tier_info["articles"],
-        "created_at": time.time(),
-        "api_key_hash": key_hash,
-        "manually_activated": True
+        "expires_at": time.time() + (30 * 24 * 3600)
     }
-    db.setdefault("api_keys", {})[key_hash] = email
     save_db(db)
 
     return {
         "status": "success",
-        "email": email,
-        "tier": tier,
-        "api_key": api_key,
-        "limit": tier_info["articles"]
+        "session_token": token,
+        "user": {
+            "email": user["email"],
+            "name": user.get("name", ""),
+            "tier": user.get("tier"),
+            "articles_used": user.get("articles_used", 0),
+            "articles_limit": user.get("articles_limit", 0),
+        }
     }
 
-@app.get("/admin/customers")
-async def admin_customers(_: None = Depends(require_admin)):
-    """List customers (admin only)"""
+# ── Admin ──
+
+@app.post("/admin/activate")
+async def admin_activate(email: str, tier: str, _: None = Depends(require_admin)):
+    tier_info = PRICING.get(tier, PRICING["basic"])
     db = load_db()
-    customers = list(db.get("customers", {}).values())
-    # Strip key hashes from response
-    for c in customers:
-        c.pop("api_key_hash", None)
-    return {"status": "success", "customers": customers, "total": len(customers)}
+    user = db.get("users", {}).get(email.lower(), {})
+    user.update({
+        "email": email.lower(),
+        "status": "active",
+        "tier": tier,
+        "articles_limit": tier_info["articles"],
+        "articles_used": 0,
+        "activated_at": time.time(),
+        "manually_activated": True
+    })
+    if not user.get("password_hash"):
+        temp_pass = secrets.token_urlsafe(8)
+        user["password_hash"] = hash_password(temp_pass)
+        user["temp_password"] = temp_pass
+    db.setdefault("users", {})[email.lower()] = user
+    save_db(db)
+    return {"status": "success", "email": email, "tier": tier, "temp_password": user.get("temp_password")}
+
+@app.get("/admin/users")
+async def admin_users(_: None = Depends(require_admin)):
+    db = load_db()
+    users = [
+        {k: v for k, v in u.items() if k not in ("password_hash",)}
+        for u in db.get("users", {}).values()
+    ]
+    return {"status": "success", "users": users, "total": len(users)}
 
 if __name__ == "__main__":
-    import uvicorn
-    import sys
-    port = 8000
-    if len(sys.argv) > 1 and sys.argv[1] == "--port" and len(sys.argv) > 2:
-        port = int(sys.argv[2])
-    elif "PORT" in os.environ:
-        port = int(os.environ.get("PORT"))
+    import uvicorn, sys
+    port = int(sys.argv[2]) if len(sys.argv) > 2 and sys.argv[1] == "--port" else int(os.getenv("PORT", 8000))
     uvicorn.run(app, host="0.0.0.0", port=port)

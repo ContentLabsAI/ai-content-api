@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WriteAI – Set up your account</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: "Inter", sans-serif;
+      background: #080808;
+      color: #f5f5f7;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      -webkit-font-smoothing: antialiased;
+    }
+    .box {
+      background: #161616;
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 24px;
+      padding: 48px 40px;
+      width: 100%;
+      max-width: 420px;
+    }
+    .logo { font-size: 22px; font-weight: 800; margin-bottom: 6px; }
+    .logo span { color: #a3e635; }
+    .step-label {
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: rgba(245,245,247,0.4);
+      margin-bottom: 24px;
+    }
+    h1 { font-size: 26px; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 8px; }
+    .sub { font-size: 14px; color: rgba(245,245,247,0.5); margin-bottom: 32px; line-height: 1.6; }
+    label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      color: rgba(245,245,247,0.4);
+      margin-bottom: 8px;
+    }
+    input {
+      width: 100%;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 10px;
+      padding: 13px 16px;
+      font-size: 15px;
+      color: #fff;
+      font-family: inherit;
+      outline: none;
+      margin-bottom: 16px;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    input:focus {
+      border-color: #a3e635;
+      box-shadow: 0 0 0 3px rgba(163,230,53,0.12);
+    }
+    input::placeholder { color: rgba(245,245,247,0.2); }
+    .hint { font-size: 12px; color: rgba(245,245,247,0.35); margin-top: -10px; margin-bottom: 20px; }
+    .error { font-size: 13px; color: #f87171; margin-bottom: 16px; display: none; }
+    button {
+      width: 100%;
+      padding: 14px;
+      background: #a3e635;
+      color: #000;
+      border: none;
+      border-radius: 100px;
+      font-size: 16px;
+      font-weight: 700;
+      font-family: inherit;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    button:hover { box-shadow: 0 0 24px rgba(163,230,53,0.25); }
+    button:disabled { opacity: 0.5; cursor: not-allowed; box-shadow: none; }
+    @media (max-width: 480px) { .box { padding: 32px 20px; } }
+  </style>
+</head>
+<body>
+<div class="box">
+  <div class="logo">Write<span>AI</span></div>
+  <div class="step-label">Account setup</div>
+  <h1>One last step.</h1>
+  <p class="sub">Set a password for your account and you're ready to start writing.</p>
+
+  <label for="email">Email address</label>
+  <input type="email" id="email" placeholder="you@example.com">
+
+  <label for="pw">Choose a password</label>
+  <input type="password" id="pw" placeholder="At least 8 characters">
+  <div class="hint">You'll use this to log in from now on.</div>
+
+  <p class="error" id="error-msg"></p>
+  <button id="submit-btn" onclick="submit()">Create account and start writing</button>
+</div>
+
+<script>
+  // Pre-fill email from Stripe session if available
+  const params = new URLSearchParams(window.location.search);
+  const sessionId = params.get('session_id') || '';
+
+  // Try to get email from session_id via a quick lookup
+  async function prefillEmail() {
+    if (!sessionId) return;
+    try {
+      const res = await fetch('/subscription/lookup?session_id=' + sessionId);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.email) document.getElementById('email').value = data.email;
+      }
+    } catch(e) {}
+  }
+  prefillEmail();
+
+  async function submit() {
+    const email = document.getElementById('email').value.trim();
+    const password = document.getElementById('pw').value;
+    const errEl = document.getElementById('error-msg');
+    const btn = document.getElementById('submit-btn');
+
+    errEl.style.display = 'none';
+
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      errEl.textContent = 'Please enter your email address.';
+      errEl.style.display = 'block';
+      return;
+    }
+    if (password.length < 8) {
+      errEl.textContent = 'Password must be at least 8 characters.';
+      errEl.style.display = 'block';
+      return;
+    }
+
+    btn.textContent = 'Setting up your account...';
+    btn.disabled = true;
+
+    try {
+      const res = await fetch('/auth/set-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password, session_id: sessionId })
+      });
+      const data = await res.json();
+
+      if (res.ok) {
+        sessionStorage.setItem('wai_session', data.session_token);
+        sessionStorage.setItem('wai_user', JSON.stringify(data.user));
+        window.location.href = '/editor';
+      } else {
+        errEl.textContent = data.detail || 'Something went wrong. Please try again.';
+        errEl.style.display = 'block';
+        btn.textContent = 'Create account and start writing';
+        btn.disabled = false;
+      }
+    } catch(e) {
+      errEl.textContent = 'Connection error. Please try again.';
+      errEl.style.display = 'block';
+      btn.textContent = 'Create account and start writing';
+      btn.disabled = false;
+    }
+  }
+
+  document.addEventListener('keydown', e => { if (e.key === 'Enter') submit(); });
+</script>
+</body>
+</html>
