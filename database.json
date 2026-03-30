@@ -1,0 +1,14 @@
+{
+  "customers": [
+    {
+      "email": "test@example.com",
+      "tier": "pro",
+      "session_id": "cs_test_123",
+      "activated_at": 1774797927.9988139,
+      "articles_used": 0,
+      "articles_limit": 200
+    }
+  ],
+  "subscriptions": [],
+  "content_usage": {}
+}

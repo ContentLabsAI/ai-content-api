@@ -12,6 +12,7 @@ from typing import Optional
 from dotenv import load_dotenv
 import httpx
 import stripe
+import json
 
 # Load environment variables
 load_dotenv()
@@ -329,10 +330,55 @@ async def stripe_webhook(request: Request):
     
     return {"status": "success"}
 
+# Simple database functions
+def load_db():
+    try:
+        with open("database.json", "r") as f:
+            return json.load(f)
+    except:
+        return {"customers": [], "subscriptions": [], "content_usage": {}}
+
+def save_db(data):
+    with open("database.json", "w") as f:
+        json.dump(data, f, indent=2)
+
+@app.post("/manual-activate")
+async def manual_activate(email: str, tier: str, session_id: str):
+    """Manual activation for testing (bypass webhook)"""
+    db = load_db()
+    
+    customer = {
+        "email": email,
+        "tier": tier,
+        "session_id": session_id,
+        "activated_at": time.time(),
+        "articles_used": 0,
+        "articles_limit": PRICING[tier]["articles"] if tier in PRICING else 50
+    }
+    
+    db["customers"].append(customer)
+    save_db(db)
+    
+    return {
+        "status": "success",
+        "message": f"Customer {email} activated on {tier} plan",
+        "limit": customer["articles_limit"],
+        "api_key": f"test_key_{session_id[-8:]}"
+    }
+
+@app.get("/customers")
+async def list_customers():
+    """List all customers"""
+    db = load_db()
+    return {"status": "success", "customers": db["customers"]}
+
 @app.get("/health")
 async def health_check():
     return {"status": "healthy", "timestamp": "2026-03-29T14:00:00Z"}
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    import os
+    # Use PORT environment variable for Render/Heroku compatibility
+    port = int(os.environ.get("PORT", 8000))
+    uvicorn.run(app, host="0.0.0.0", port=port)
