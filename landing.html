@@ -132,7 +132,6 @@
       padding: 6px 16px;
       border-radius: 100px;
       margin-bottom: 32px;
-      opacity: 0;
     }
 
     .hero-badge::before {
@@ -157,7 +156,6 @@
       color: var(--white);
       margin-bottom: 24px;
       max-width: 900px;
-      opacity: 0;
     }
 
     h1 .accent-word {
@@ -174,7 +172,6 @@
       line-height: 1.6;
       font-weight: 400;
       margin-bottom: 48px;
-      opacity: 0;
     }
 
     .hero-actions {
@@ -182,7 +179,6 @@
       gap: 14px;
       justify-content: center;
       flex-wrap: wrap;
-      opacity: 0;
       margin-bottom: 80px;
     }
 
@@ -245,7 +241,6 @@
       padding: 0 48px;
       text-align: center;
       position: relative;
-      opacity: 0;
       transform: translateY(20px);
     }
 
@@ -289,7 +284,6 @@
       text-transform: uppercase;
       color: var(--muted);
       margin-bottom: 20px;
-      opacity: 0;
     }
 
     .section-title {
@@ -299,7 +293,6 @@
       line-height: 1.05;
       color: var(--white);
       margin-bottom: 20px;
-      opacity: 0;
     }
 
     .section-body {
@@ -308,7 +301,6 @@
       line-height: 1.7;
       max-width: 560px;
       margin: 0 auto;
-      opacity: 0;
     }
 
     /* ─── CONTENT SHOWCASE ─── */
@@ -351,7 +343,6 @@
       border-radius: 24px;
       overflow: hidden;
       display: none;
-      opacity: 0;
       transform: translateY(20px);
     }
 
@@ -468,7 +459,6 @@
       padding: 36px;
       background: var(--card);
       transition: background 0.3s;
-      opacity: 0;
       transform: translateY(20px);
     }
 
@@ -521,7 +511,6 @@
       padding: 36px;
       position: relative;
       transition: transform 0.3s, border-color 0.3s;
-      opacity: 0;
       transform: translateY(30px);
     }
 
@@ -681,7 +670,6 @@
       grid-template-columns: 48px 1fr;
       gap: 24px;
       padding-bottom: 48px;
-      opacity: 0;
       transform: translateX(-20px);
     }
 
@@ -739,7 +727,6 @@
 
     .faq-item {
       border-bottom: 1px solid var(--border);
-      opacity: 0;
     }
 
     .faq-q {
@@ -815,18 +802,15 @@
       color: var(--white);
       margin-bottom: 20px;
       line-height: 1.05;
-      opacity: 0;
     }
 
     .cta-section p {
       font-size: 18px;
       color: var(--muted);
       margin-bottom: 48px;
-      opacity: 0;
     }
 
     .cta-section .btn-primary {
-      opacity: 0;
       font-size: 18px;
       padding: 18px 44px;
     }
@@ -835,7 +819,6 @@
       margin-top: 20px;
       font-size: 13px;
       color: var(--muted);
-      opacity: 0;
     }
 
     /* ─── FOOTER ─── */
@@ -1406,7 +1389,18 @@
 </div>
 
 <script>
+  // If GSAP CDN failed, make page fully visible immediately
+  if (typeof gsap === 'undefined' || typeof ScrollTrigger === 'undefined') {
+    console.warn('GSAP not loaded - showing page without animations');
+  } else {
+
   gsap.registerPlugin(ScrollTrigger);
+
+  // Set initial hidden state via JS (not CSS) - so page is visible if GSAP fails
+  gsap.set(["#hero-badge","#hero-h1","#hero-sub","#hero-actions"], { opacity: 0, y: 30 });
+  document.querySelectorAll('[data-anim="fade-up"]').forEach(el => gsap.set(el, { opacity: 0, y: 40 }));
+  document.querySelectorAll('[data-anim="fade-left"]').forEach(el => gsap.set(el, { opacity: 0, x: -30 }));
+  document.querySelectorAll('.feature-tile, .plan-card, .tl-item, .faq-item').forEach(el => gsap.set(el, { opacity: 0, y: 20 }));
 
   // NAV scroll effect
   ScrollTrigger.create({
@@ -1533,6 +1527,21 @@
     const y = (e.clientY / window.innerHeight - 0.5) * 40;
     gsap.to(glow, { x, y, duration: 1.5, ease: "power2.out" });
   });
+
+
+  // Safety fallback: if ScrollTrigger animations never fire (slow connection, mobile, etc.)
+  // force everything visible after 2.5s
+  setTimeout(function() {
+    var els = document.querySelectorAll('[data-anim], .feature-tile, .plan-card, .tl-item, .faq-item, #hero-badge, #hero-h1, #hero-sub, #hero-actions, .stat');
+    els.forEach(function(el) {
+      if (parseFloat(getComputedStyle(el).opacity) < 0.5) {
+        el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+        el.style.opacity = '1';
+        el.style.transform = 'none';
+      }
+    });
+  }, 2500);
+  } // end GSAP block
 </script>
 
 </body>
