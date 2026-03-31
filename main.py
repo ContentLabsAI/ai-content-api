@@ -362,7 +362,11 @@ async def generate_content(request: ContentRequest, user: dict = Depends(require
     start = time.time()
     # Use main key for all generation (sub-keys require funded management account)
     # Per-customer limits enforced via articles_used counter above
-    content = await generate_ai_content(request.topic, request.style, request.length, request.tone, customer_key=OPENROUTER_API_KEY)
+    # Re-read key at runtime in case env var wasn't available at startup
+    api_key = OPENROUTER_API_KEY or os.getenv("OPENROUTER_API_KEY", "")
+    if not api_key:
+        raise HTTPException(status_code=503, detail="Content generation temporarily unavailable. Please try again shortly.")
+    content = await generate_ai_content(request.topic, request.style, request.length, request.tone, customer_key=api_key)
 
     # Update usage and save to history
     db = load_db()
@@ -517,7 +521,9 @@ async def get_pricing():
 
 @app.get("/health")
 async def health():
-    return {"status": "healthy", "version": "0.5.0", "openrouter": bool(OPENROUTER_API_KEY), "stripe": bool(STRIPE_SECRET_KEY)}
+    or_key = OPENROUTER_API_KEY or os.getenv("OPENROUTER_API_KEY", "")
+    stripe_key = STRIPE_SECRET_KEY or os.getenv("STRIPE_SECRET_KEY", "")
+    return {"status": "healthy", "version": "0.6.2", "openrouter": bool(or_key), "stripe": bool(stripe_key)}
 
 # ── Pages ──
 
