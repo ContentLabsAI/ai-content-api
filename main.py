@@ -366,7 +366,13 @@ async def generate_content(request: ContentRequest, user: dict = Depends(require
     api_key = OPENROUTER_API_KEY or os.getenv("OPENROUTER_API_KEY", "")
     if not api_key:
         raise HTTPException(status_code=503, detail="Content generation temporarily unavailable. Please try again shortly.")
-    content = await generate_ai_content(request.topic, request.style, request.length, request.tone, customer_key=api_key)
+    try:
+        content = await generate_ai_content(request.topic, request.style, request.length, request.tone, customer_key=api_key)
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"ERROR in generate_ai_content: {type(e).__name__}: {e}")
+        raise HTTPException(status_code=500, detail=f"Generation failed: {type(e).__name__}: {str(e)[:200]}")
 
     # Update usage and save to history
     db = load_db()
