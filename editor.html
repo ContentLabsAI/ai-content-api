@@ -269,8 +269,8 @@
       const res = await fetch('/auth/login', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({email, password: pass})});
       const data = await res.json();
       if (res.ok) {
-        sessionToken=data.s...ken;
-        sessionStorage.setItem('wai_'+'session', sessionToken);
+        sessionToken = data.tok;
+        sessionStorage.setItem('wai_auth', sessionToken);
         bootApp(data.user);
       } else {
         errEl.textContent = data.detail || 'Incorrect email or password.';
@@ -302,8 +302,8 @@
   }
 
   async function signOut() {
-    if (sessionToken) fetch('/auth/logout', {method:'POST', headers:{'X-Ses'+'sion-Token':sessionToken}}).catch(()=>{});
-    sessionStorage.removeItem('wai_'+'session');
+    if (sessionToken) fetch('/auth/logout', {method:'POST', headers:{'X-Auth-Token':sessionToken}}).catch(()=>{});
+    sessionStorage.removeItem('wai_auth');
     sessionToken = null
     document.getElementById('app-screen').style.display = 'none';
     document.getElementById('login-screen').style.display = 'flex';
@@ -312,12 +312,12 @@
   }
 
   window.addEventListener('load', async () => {
-    const saved = sessionStorage.getItem('wai_'+'session');
+    const saved = sessionStorage.getItem('wai_auth');
     if (!saved) return;
     try {
-      const res = await fetch('/auth/me', {headers:{'X-Ses'+'sion-Token':saved}});
+      const res = await fetch('/auth/me', {headers:{'X-Auth-Token':saved}});
       if (res.ok) { sessionToken = null; bootApp(await res.json()); }
-      else sessionStorage.removeItem('wai_'+'session');
+      else sessionStorage.removeItem('wai_auth');
     } catch(e) {}
   });
 
@@ -363,7 +363,7 @@
     try {
       const res = await fetch('/generate', {
         method:'POST',
-        headers:{'Content-Type':'application/json','X-Ses'+'sion-Token':sessionToken},
+        headers:{'Content-Type':'application/json','X-Auth-Token':sessionToken},
         body: JSON.stringify({topic, style: currentType, length: currentLen, tone})
       });
       const data = await res.json();
@@ -399,7 +399,7 @@
   async function loadHistory() {
     if (!sessionToken) return;
     try {
-      const res = await fetch('/history', {headers:{'X-Ses'+'sion-Token':sessionToken}});
+      const res = await fetch('/history', {headers:{'X-Auth-Token':sessionToken}});
       if (!res.ok) return;
       const data = await res.json();
       renderHistory(data.history || []);

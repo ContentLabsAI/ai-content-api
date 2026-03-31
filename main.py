@@ -135,10 +135,10 @@ def get_user_by_session(token: str) -> Optional[dict]:
 
 # ── Auth dependency ──
 
-async def require_session(x_session_token: Optional[str] = Header(None)) -> dict:
-    if not x_session_token:
+async def require_session(x_auth_token: Optional[str] = Header(None)) -> dict:
+    if not x_auth_token:
         raise HTTPException(status_code=401, detail="Not logged in")
-    user = get_user_by_session(x_session_token)
+    user = get_user_by_session(x_auth_token)
     if not user:
         raise HTTPException(status_code=401, detail="Session expired. Please log in again.")
     if user.get("status") != "active":
@@ -306,7 +306,7 @@ async def login(req: LoginRequest):
 
     return {
         "status": "success",
-        "session_token": token,
+        "tok": token,
         "user": {
             "email": user["email"],
             "name": user.get("name", ""),
@@ -318,10 +318,10 @@ async def login(req: LoginRequest):
     }
 
 @app.post("/auth/logout")
-async def logout(x_session_token: Optional[str] = Header(None)):
-    if x_session_token:
+async def logout(x_auth_token: Optional[str] = Header(None)):
+    if x_auth_token:
         db = load_db()
-        db.get("sessions", {}).pop(x_session_token, None)
+        db.get("sessions", {}).pop(x_auth_token, None)
         save_db(db)
     return {"status": "success"}
 
@@ -585,7 +585,7 @@ async def set_password(request: Request):
 
     return {
         "status": "success",
-        "session_token": token,
+        "tok": token,
         "user": {
             "email": user["email"],
             "name": user.get("name", ""),
