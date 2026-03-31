@@ -339,6 +339,14 @@ async def get_me(user: dict = Depends(require_session)):
 
 # ── Routes: Content ──
 
+@app.get("/history")
+async def get_history(user: dict = Depends(require_session)):
+    """Return the user's generation history."""
+    db = load_db()
+    history = db.get("history", {}).get(user["email"], [])
+    # Return most recent first, cap at 50
+    return {"status": "success", "history": list(reversed(history[-50:]))}
+
 @app.post("/generate")
 async def generate_content(request: ContentRequest, user: dict = Depends(require_session)):
     """Generate content. Requires active subscription session."""
@@ -356,10 +364,22 @@ async def generate_content(request: ContentRequest, user: dict = Depends(require
     # Per-customer limits enforced via articles_used counter above
     content = await generate_ai_content(request.topic, request.style, request.length, request.tone, customer_key=OPENROUTER_API_KEY)
 
-    # Update usage
+    # Update usage and save to history
     db = load_db()
     if user["email"] in db.get("users", {}):
         db["users"][user["email"]]["articles_used"] = articles_used + 1
+        # Append to history
+        entry = {
+            "id": secrets.token_urlsafe(8),
+            "topic": request.topic,
+            "style": request.style,
+            "length": request.length,
+            "tone": request.tone,
+            "content": content,
+            "words": len(content.split()),
+            "created_at": time.time()
+        }
+        db.setdefault("history", {}).setdefault(user["email"], []).append(entry)
         save_db(db)
 
     return {

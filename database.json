@@ -44,7 +44,7 @@
       "status": "active",
       "tier": "pro",
       "articles_limit": 200,
-      "articles_used": 1,
+      "articles_used": 4,
       "activated_at": 1774914222.5079126,
       "manually_activated": true,
       "password_hash": "bd822f570d6267eeba8323f4cea7fd5bb10ec68a50ba3b93f8b0fd5ed2c0b47d",
@@ -80,6 +80,36 @@
     "3YMqEOe0kakFT432PfYAQT7k1IgNk5jLe9bSiCQIM5o": {
       "email": "hugo@contentlabs.ai",
       "expires_at": 1777507320.3544958
+    },
+    "C9Ejua9qzqO0uZB24mW7T5Ry3p8SArHImAD41w8KvKk": {
+      "email": "hugo@contentlabs.ai",
+      "expires_at": 1777507420.4837546
+    },
+    "UINHxtv8GSuZmE2E9Tnx41yGJv1i4OkZVbMLwvcGHno": {
+      "email": "hugo@contentlabs.ai",
+      "expires_at": 1777507540.2092319
+    },
+    "ZnLSk3BrOmgG1DF9lC-LJiIEokLl0ubgzIw9i7l4obw": {
+      "email": "hugo@contentlabs.ai",
+      "expires_at": 1777507559.1516995
+    },
+    "JrJKJfyKlVEjenK6kin_JdaOlPkfvnCzCOVcB1RyZBg": {
+      "email": "hugo@contentlabs.ai",
+      "expires_at": 1777507929.4389873
     }
+  },
+  "history": {
+    "hugo@contentlabs.ai": [
+      {
+        "id": "q9SM-A9OHME",
+        "topic": "the best morning routines for productivity",
+        "style": "blog",
+        "length": "short",
+        "tone": "conversational",
+        "content": "Think about this: what if you could jump-start your day by accomplishing more before noon than some people do all week? Picture a quiet house at 6 AM. The sun is just peeking through the blinds, and instead of hitting snooze, you\u2019re already in your favorite chair, sipping coffee while reviewing your day\u2019s goals. That's the kind of morning routine that sets you up for success.\n\nFirst, stay consistent. Waking up at the same time every day helps regulate your body\u2019s internal clock. Choose a time and stick to it. After a week or two, you'll find it easier to get out of bed. \n\nNext, don\u2019t underestimate the power of movement. Whether it\u2019s a brisk walk around the block or a short yoga session, getting your blood flowing has immediate benefits for mood and focus. Twenty minutes of physical activity can boost your energy and sharpen your thinking. \n\nHydrate. After several hours of sleep, your body needs water to function well. A glass of water first thing can kickstart your metabolism and help you feel more alert. Follow up with a healthy breakfast. Oatmeal with fruit or eggs and avocado can give you lasting energy.\n\nLastly, spend a few minutes on mindfulness. This doesn\u2019t have to be complex. A simple five-minute meditation or journaling session can help clear your mind, reduce stress, and set positive intentions for the day ahead. \n\nAll of these elements work together to create a routine that gears you up, fuels your motivation, and primes your mind for productivity. Stick with it. Transform your mornings, and you\u2019ll likely see a domino effect throughout your day.",
+        "words": 269,
+        "created_at": 1774915936.1806507
+      }
+    ]
   }
 }

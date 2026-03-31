@@ -9,7 +9,6 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
     :root {
       --bg: #0a0a0a;
       --surface: #161616;
@@ -18,406 +17,80 @@
       --text: #f0f0f2;
       --muted: rgba(240,240,242,0.45);
       --accent: #a3e635;
-      --accent-glow: rgba(163,230,53,0.2);
+      --accent-glow: rgba(163,230,53,0.18);
       --danger: #f87171;
-      --radius: 12px;
     }
+    html, body { height: 100%; background: var(--bg); color: var(--text); font-family: "Inter", -apple-system, sans-serif; -webkit-font-smoothing: antialiased; overflow: hidden; }
 
-    html, body {
-      height: 100%;
-      background: var(--bg);
-      color: var(--text);
-      font-family: "Inter", -apple-system, sans-serif;
-      -webkit-font-smoothing: antialiased;
-      overflow: hidden;
-    }
-
-    /* ─── LOGIN ─── */
-    #login-screen {
-      height: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-      overflow-y: auto;
-    }
-
-    .login-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 20px;
-      padding: 36px 28px;
-      width: 100%;
-      max-width: 400px;
-    }
-
+    /* ── LOGIN ── */
+    #login-screen { height: 100%; display: flex; align-items: center; justify-content: center; padding: 20px; overflow-y: auto; }
+    .login-card { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 36px 28px; width: 100%; max-width: 400px; }
     .brand { font-size: 24px; font-weight: 800; margin-bottom: 4px; }
     .brand span { color: var(--accent); }
     .login-sub { font-size: 14px; color: var(--muted); margin-bottom: 28px; }
-
-    label {
-      display: block;
-      font-size: 11px;
-      font-weight: 700;
-      letter-spacing: 0.8px;
-      text-transform: uppercase;
-      color: var(--muted);
-      margin-bottom: 7px;
-    }
-
-    input[type=email], input[type=password], input[type=text], textarea, select {
-      width: 100%;
-      background: rgba(255,255,255,0.05);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 13px 14px;
-      font-size: 16px; /* 16px prevents iOS zoom */
-      color: var(--text);
-      font-family: inherit;
-      outline: none;
-      transition: border-color 0.2s, box-shadow 0.2s;
-      -webkit-appearance: none;
-    }
-
-    input:focus, textarea:focus, select:focus {
-      border-color: var(--accent);
-      box-shadow: 0 0 0 3px var(--accent-glow);
-    }
-
-    input::placeholder, textarea::placeholder { color: rgba(240,240,242,0.2); }
-
+    label { display: block; font-size: 11px; font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase; color: var(--muted); margin-bottom: 7px; }
+    input[type=email], input[type=password] { width: 100%; background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 10px; padding: 13px 14px; font-size: 16px; color: var(--text); font-family: inherit; outline: none; transition: border-color 0.2s, box-shadow 0.2s; -webkit-appearance: none; }
+    input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
+    input::placeholder { color: rgba(240,240,242,0.2); }
     .field { margin-bottom: 16px; }
-
-    .btn-primary {
-      width: 100%;
-      padding: 15px;
-      background: var(--accent);
-      color: #000;
-      border: none;
-      border-radius: 100px;
-      font-size: 16px;
-      font-weight: 700;
-      font-family: inherit;
-      cursor: pointer;
-      transition: opacity 0.2s, box-shadow 0.2s;
-      margin-top: 4px;
-      -webkit-tap-highlight-color: transparent;
-    }
-
-    .btn-primary:active { opacity: 0.85; }
-    .btn-primary:disabled { opacity: 0.45; cursor: not-allowed; }
-
-    .login-error {
-      font-size: 13px;
-      color: var(--danger);
-      margin-bottom: 12px;
-      display: none;
-      padding: 10px 14px;
-      background: rgba(248,113,113,0.1);
-      border-radius: 8px;
-    }
-
-    .login-help {
-      text-align: center;
-      font-size: 13px;
-      color: var(--muted);
-      margin-top: 18px;
-    }
-
+    .btn-full { width: 100%; padding: 15px; background: var(--accent); color: #000; border: none; border-radius: 100px; font-size: 16px; font-weight: 700; font-family: inherit; cursor: pointer; margin-top: 4px; -webkit-tap-highlight-color: transparent; }
+    .btn-full:active { opacity: 0.85; }
+    .btn-full:disabled { opacity: 0.45; }
+    .login-error { font-size: 13px; color: var(--danger); margin-bottom: 12px; display: none; padding: 10px 14px; background: rgba(248,113,113,0.1); border-radius: 8px; }
+    .login-help { text-align: center; font-size: 13px; color: var(--muted); margin-top: 18px; }
     .login-help a { color: var(--accent); text-decoration: none; }
 
-    /* ─── APP ─── */
-    #app-screen {
-      display: none;
-      height: 100%;
-      flex-direction: column;
-    }
-
-    /* Top bar */
-    .top-bar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 12px 16px;
-      border-bottom: 1px solid var(--border);
-      background: var(--bg);
-      flex-shrink: 0;
-      gap: 10px;
-    }
-
+    /* ── APP ── */
+    #app-screen { display: none; height: 100%; flex-direction: column; }
+    .top-bar { display: flex; align-items: center; padding: 12px 16px; border-bottom: 1px solid var(--border); background: var(--bg); flex-shrink: 0; gap: 10px; }
     .top-brand { font-size: 17px; font-weight: 800; flex-shrink: 0; }
     .top-brand span { color: var(--accent); }
+    .usage-badge { background: rgba(163,230,53,0.08); border: 1px solid rgba(163,230,53,0.2); color: var(--accent); font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 100px; flex: 1; text-align: center; }
+    .btn-sm { background: transparent; border: 1px solid var(--border); color: var(--muted); padding: 6px 12px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; font-family: inherit; flex-shrink: 0; -webkit-tap-highlight-color: transparent; }
 
-    .usage-badge {
-      background: rgba(163,230,53,0.08);
-      border: 1px solid rgba(163,230,53,0.2);
-      color: var(--accent);
-      font-size: 11px;
-      font-weight: 700;
-      padding: 4px 10px;
-      border-radius: 100px;
-      flex-shrink: 0;
-    }
+    /* ── TAB NAV (mobile) ── */
+    .tab-nav { display: flex; border-bottom: 1px solid var(--border); background: var(--bg); flex-shrink: 0; }
+    .tnav-btn { flex: 1; padding: 11px 8px; font-size: 13px; font-weight: 600; color: var(--muted); background: transparent; border: none; border-bottom: 2px solid transparent; cursor: pointer; font-family: inherit; transition: all 0.15s; -webkit-tap-highlight-color: transparent; }
+    .tnav-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
 
-    .btn-signout {
-      background: transparent;
-      border: 1px solid var(--border);
-      color: var(--muted);
-      padding: 6px 12px;
-      border-radius: 8px;
-      font-size: 12px;
-      font-weight: 600;
-      cursor: pointer;
-      font-family: inherit;
-      flex-shrink: 0;
-      -webkit-tap-highlight-color: transparent;
-    }
-
-    /* Tab navigation — mobile switches between form and output */
-    .tab-nav {
-      display: flex;
-      border-bottom: 1px solid var(--border);
-      background: var(--bg);
-      flex-shrink: 0;
-    }
-
-    .tab-btn {
-      flex: 1;
-      padding: 11px 8px;
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--muted);
-      background: transparent;
-      border: none;
-      cursor: pointer;
-      font-family: inherit;
-      border-bottom: 2px solid transparent;
-      transition: all 0.15s;
-      -webkit-tap-highlight-color: transparent;
-    }
-
-    .tab-btn.active {
-      color: var(--accent);
-      border-bottom-color: var(--accent);
-    }
-
-    /* Main content area */
-    .main {
-      flex: 1;
-      overflow: hidden;
-      position: relative;
-    }
-
-    .pane {
-      position: absolute;
-      inset: 0;
-      overflow-y: auto;
-      -webkit-overflow-scrolling: touch;
-      display: none;
-    }
-
+    /* ── MAIN ── */
+    .main { flex: 1; overflow: hidden; position: relative; }
+    .pane { position: absolute; inset: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; display: none; }
     .pane.active { display: block; }
 
-    /* ─── FORM PANE ─── */
-    .form-pane {
-      padding: 16px;
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-    }
+    /* ── FORM ── */
+    .form-inner { padding: 16px; display: flex; flex-direction: column; gap: 14px; }
+    .fsec { display: flex; flex-direction: column; gap: 8px; }
+    textarea.topic { width: 100%; background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 10px; padding: 13px 14px; font-size: 16px; color: var(--text); font-family: inherit; outline: none; resize: none; min-height: 80px; line-height: 1.5; -webkit-appearance: none; transition: border-color 0.2s, box-shadow 0.2s; }
+    textarea.topic:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
+    .type-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .type-btn { padding: 11px 8px; background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 10px; font-size: 13px; font-weight: 500; color: var(--muted); cursor: pointer; font-family: inherit; text-align: center; transition: all 0.15s; -webkit-tap-highlight-color: transparent; }
+    .type-btn.active { background: rgba(163,230,53,0.1); border-color: rgba(163,230,53,0.4); color: var(--accent); font-weight: 600; }
+    .len-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+    .len-btn { padding: 10px 6px; background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 10px; font-size: 12px; font-weight: 600; color: var(--muted); cursor: pointer; font-family: inherit; text-align: center; line-height: 1.4; transition: all 0.15s; -webkit-tap-highlight-color: transparent; }
+    .len-btn.active { background: rgba(163,230,53,0.1); border-color: rgba(163,230,53,0.4); color: var(--accent); }
+    .len-sub { font-size: 10px; font-weight: 400; opacity: 0.6; display: block; }
+    select.tone { width: 100%; background: rgba(255,255,255,0.05) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='7'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23888' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E") no-repeat right 14px center; border: 1px solid var(--border); border-radius: 10px; padding: 13px 36px 13px 14px; font-size: 16px; color: var(--text); font-family: inherit; outline: none; -webkit-appearance: none; transition: border-color 0.2s; }
+    select.tone:focus { border-color: var(--accent); }
+    .gen-btn { width: 100%; padding: 16px; background: var(--accent); color: #000; border: none; border-radius: 14px; font-size: 17px; font-weight: 800; font-family: inherit; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; -webkit-tap-highlight-color: transparent; }
+    .gen-btn:active { opacity: 0.85; }
+    .gen-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+    .gen-hint { text-align: center; font-size: 12px; color: var(--muted); padding-bottom: 8px; }
 
-    .form-section { display: flex; flex-direction: column; gap: 8px; }
-
-    textarea.topic-input {
-      min-height: 80px;
-      resize: none;
-      line-height: 1.5;
-      font-size: 16px;
-    }
-
-    /* Content type grid */
-    .type-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
-    }
-
-    .type-btn {
-      padding: 11px 8px;
-      background: rgba(255,255,255,0.03);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      font-size: 13px;
-      font-weight: 500;
-      color: var(--muted);
-      cursor: pointer;
-      font-family: inherit;
-      text-align: center;
-      transition: all 0.15s;
-      -webkit-tap-highlight-color: transparent;
-    }
-
-    .type-btn.active {
-      background: rgba(163,230,53,0.1);
-      border-color: rgba(163,230,53,0.4);
-      color: var(--accent);
-      font-weight: 600;
-    }
-
-    /* Length pills */
-    .length-row {
-      display: grid;
-      grid-template-columns: 1fr 1fr 1fr;
-      gap: 8px;
-    }
-
-    .length-btn {
-      padding: 10px 6px;
-      background: rgba(255,255,255,0.03);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--muted);
-      cursor: pointer;
-      font-family: inherit;
-      text-align: center;
-      line-height: 1.4;
-      transition: all 0.15s;
-      -webkit-tap-highlight-color: transparent;
-    }
-
-    .length-btn.active {
-      background: rgba(163,230,53,0.1);
-      border-color: rgba(163,230,53,0.4);
-      color: var(--accent);
-    }
-
-    .length-words {
-      font-size: 10px;
-      font-weight: 400;
-      opacity: 0.6;
-      display: block;
-    }
-
-    /* Tone select */
-    select.tone-select {
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='7'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23888' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
-      background-repeat: no-repeat;
-      background-position: right 14px center;
-      padding-right: 36px;
-      cursor: pointer;
-    }
-
-    /* Generate button */
-    .generate-btn {
-      width: 100%;
-      padding: 16px;
-      background: var(--accent);
-      color: #000;
-      border: none;
-      border-radius: 14px;
-      font-size: 17px;
-      font-weight: 800;
-      font-family: inherit;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      -webkit-tap-highlight-color: transparent;
-      transition: opacity 0.15s;
-    }
-
-    .generate-btn:active { opacity: 0.85; }
-    .generate-btn:disabled { opacity: 0.45; cursor: not-allowed; }
-
-    .gen-hint {
-      text-align: center;
-      font-size: 12px;
-      color: var(--muted);
-      padding-bottom: 8px;
-    }
-
-    /* ─── OUTPUT PANE ─── */
-    .output-pane { padding: 0; display: flex; flex-direction: column; }
-
-    .output-toolbar {
-      padding: 12px 16px;
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-      flex-shrink: 0;
-      position: sticky;
-      top: 0;
-      background: var(--bg);
-      z-index: 10;
-    }
-
-    .output-meta {
-      font-size: 12px;
-      color: var(--muted);
-      flex: 1;
-      min-width: 0;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-
+    /* ── OUTPUT ── */
+    .output-toolbar { padding: 12px 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; gap: 10px; position: sticky; top: 0; background: var(--bg); z-index: 10; }
+    .output-meta { font-size: 12px; color: var(--muted); flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .output-meta strong { color: var(--text); }
-
     .toolbar-btns { display: flex; gap: 8px; flex-shrink: 0; }
-
-    .btn-action {
-      padding: 7px 14px;
-      background: rgba(255,255,255,0.06);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--text);
-      cursor: pointer;
-      font-family: inherit;
-      display: flex;
-      align-items: center;
-      gap: 5px;
-      -webkit-tap-highlight-color: transparent;
-    }
-
-    .btn-action:disabled { opacity: 0.3; cursor: not-allowed; }
-    .btn-action:active { opacity: 0.7; }
-
-    .output-body {
-      padding: 20px 16px;
-      font-size: 15px;
-      line-height: 1.8;
-      color: var(--text);
-      flex: 1;
-    }
-
-    .empty-state {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      padding: 60px 24px;
-      gap: 12px;
-    }
-
+    .btn-act { padding: 7px 14px; background: rgba(255,255,255,0.06); border: 1px solid var(--border); border-radius: 8px; font-size: 13px; font-weight: 600; color: var(--text); cursor: pointer; font-family: inherit; -webkit-tap-highlight-color: transparent; }
+    .btn-act:disabled { opacity: 0.3; cursor: not-allowed; }
+    .btn-act:active { opacity: 0.7; }
+    .output-body { padding: 20px 16px; font-size: 15px; line-height: 1.8; }
+    .empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 60px 24px; gap: 12px; }
     .empty-icon { font-size: 40px; opacity: 0.2; }
-
-    .empty-state h3 {
-      font-size: 17px;
-      font-weight: 700;
-      color: rgba(240,240,242,0.35);
-    }
-
+    .empty-state h3 { font-size: 17px; font-weight: 700; color: rgba(240,240,242,0.35); }
     .empty-state p { font-size: 14px; color: var(--muted); }
-
-    .output-content h1 { font-size: 22px; font-weight: 800; margin: 0 0 14px; letter-spacing: -0.5px; color: #fff; }
+    .output-content h1 { font-size: 22px; font-weight: 800; margin: 0 0 14px; color: #fff; }
     .output-content h2 { font-size: 18px; font-weight: 700; margin: 20px 0 10px; color: #fff; }
     .output-content h3 { font-size: 16px; font-weight: 700; margin: 16px 0 8px; color: #fff; }
     .output-content p { margin-bottom: 14px; color: rgba(240,240,242,0.8); }
@@ -426,79 +99,39 @@
     .output-content ul, .output-content ol { margin: 0 0 14px 20px; color: rgba(240,240,242,0.8); }
     .output-content li { margin-bottom: 6px; }
 
-    /* Loading dots */
-    .dots {
-      display: flex;
-      gap: 6px;
-      align-items: center;
-      justify-content: center;
-      padding: 48px 0;
-    }
+    /* ── HISTORY ── */
+    .hist-inner { padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+    .hist-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 60px 24px; gap: 12px; }
+    .hist-empty h3 { font-size: 17px; font-weight: 700; color: rgba(240,240,242,0.35); }
+    .hist-empty p { font-size: 14px; color: var(--muted); }
+    .hist-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 16px; cursor: pointer; transition: border-color 0.15s; -webkit-tap-highlight-color: transparent; }
+    .hist-card:active { border-color: rgba(163,230,53,0.3); }
+    .hist-card-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; margin-bottom: 8px; }
+    .hist-topic { font-size: 14px; font-weight: 600; color: var(--text); flex: 1; line-height: 1.4; }
+    .hist-meta { font-size: 11px; color: var(--muted); display: flex; gap: 8px; flex-wrap: wrap; }
+    .hist-tag { background: rgba(255,255,255,0.06); border: 1px solid var(--border); padding: 2px 8px; border-radius: 6px; text-transform: capitalize; }
+    .hist-preview { font-size: 13px; color: var(--muted); line-height: 1.5; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+    .hist-date { font-size: 11px; color: rgba(240,240,242,0.3); flex-shrink: 0; }
 
-    .dots span {
-      width: 8px; height: 8px;
-      border-radius: 50%;
-      background: var(--accent);
-      animation: bounce 1.2s infinite;
-    }
-
+    /* ── LOADING ── */
+    .dots { display: flex; gap: 6px; align-items: center; justify-content: center; padding: 48px 0; }
+    .dots span { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); animation: bounce 1.2s infinite; }
     .dots span:nth-child(2) { animation-delay: 0.2s; }
     .dots span:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes bounce { 0%,80%,100%{transform:scale(0.6);opacity:0.3} 40%{transform:scale(1);opacity:1} }
 
-    @keyframes bounce {
-      0%, 80%, 100% { transform: scale(0.6); opacity: 0.3; }
-      40% { transform: scale(1); opacity: 1; }
-    }
-
-    /* Toast */
-    .toast {
-      position: fixed;
-      bottom: 24px;
-      left: 50%;
-      transform: translateX(-50%) translateY(60px);
-      background: #fff;
-      color: #000;
-      padding: 12px 24px;
-      border-radius: 100px;
-      font-size: 14px;
-      font-weight: 600;
-      z-index: 9999;
-      transition: transform 0.3s ease;
-      white-space: nowrap;
-      pointer-events: none;
-    }
-
+    /* ── TOAST ── */
+    .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(60px); background: #fff; color: #000; padding: 12px 24px; border-radius: 100px; font-size: 14px; font-weight: 600; z-index: 9999; transition: transform 0.3s; white-space: nowrap; pointer-events: none; }
     .toast.show { transform: translateX(-50%) translateY(0); }
 
-    /* Desktop: side-by-side */
+    /* ── DESKTOP ── */
     @media (min-width: 768px) {
       .tab-nav { display: none; }
-
-      #app-screen {
-        flex-direction: column;
-      }
-
-      .main {
-        display: grid;
-        grid-template-columns: 320px 1fr;
-        overflow: hidden;
-      }
-
-      .pane {
-        position: static;
-        display: block !important;
-        height: 100%;
-        overflow-y: auto;
-      }
-
-      .form-pane {
-        border-right: 1px solid var(--border);
-      }
-
-      .output-pane {
-        display: flex;
-        flex-direction: column;
-      }
+      #app-screen { flex-direction: column; }
+      .main { display: grid; grid-template-columns: 320px 1fr 300px; overflow: hidden; }
+      .pane { position: static; display: block !important; height: 100%; overflow-y: auto; }
+      .pane-form { border-right: 1px solid var(--border); }
+      .pane-history { border-left: 1px solid var(--border); }
     }
   </style>
 </head>
@@ -509,20 +142,16 @@
   <div class="login-card">
     <div class="brand">Write<span>AI</span></div>
     <div class="login-sub">Sign in to start writing</div>
-
     <div class="field">
       <label for="l-email">Email</label>
       <input type="email" id="l-email" placeholder="you@example.com" autocomplete="email" inputmode="email">
     </div>
-
     <div class="field">
       <label for="l-pass">Password</label>
       <input type="password" id="l-pass" placeholder="Your password" autocomplete="current-password">
     </div>
-
     <div class="login-error" id="login-error"></div>
-    <button class="btn-primary" id="login-btn" onclick="doLogin()">Sign in</button>
-
+    <button class="btn-full" id="login-btn" onclick="doLogin()">Sign in</button>
     <p class="login-help">No account? <a href="/#pricing">Get started from £9.99/month</a></p>
   </div>
 </div>
@@ -531,29 +160,27 @@
 <div id="app-screen">
   <div class="top-bar">
     <div class="top-brand">Write<span>AI</span></div>
-    <div class="usage-badge" id="usage-badge">— / —</div>
-    <button class="btn-signout" onclick="signOut()">Sign out</button>
+    <div class="usage-badge" id="usage-badge">Loading...</div>
+    <button class="btn-sm" onclick="signOut()">Sign out</button>
   </div>
 
-  <!-- Mobile tabs -->
   <div class="tab-nav">
-    <button class="tab-btn active" onclick="switchTab('form', this)">Write</button>
-    <button class="tab-btn" id="output-tab-btn" onclick="switchTab('output', this)">Output</button>
+    <button class="tnav-btn active" onclick="goTab('form',this)">Write</button>
+    <button class="tnav-btn" id="output-tab" onclick="goTab('output',this)">Output</button>
+    <button class="tnav-btn" onclick="goTab('history',this)">History</button>
   </div>
 
   <div class="main">
     <!-- FORM -->
-    <div class="pane active" id="pane-form">
-      <div class="form-pane">
-
-        <div class="form-section">
+    <div class="pane pane-form active" id="pane-form">
+      <div class="form-inner">
+        <div class="fsec">
           <label>What do you want to write about?</label>
-          <textarea class="topic-input" id="topic" placeholder="e.g. Tips for better sleep, why our new product is worth it, summer sale campaign..." rows="3"></textarea>
+          <textarea class="topic" id="topic" placeholder="e.g. Tips for better sleep, why our product is worth it, summer sale campaign..." rows="3"></textarea>
         </div>
-
-        <div class="form-section">
+        <div class="fsec">
           <label>Content type</label>
-          <div class="type-grid" id="type-grid">
+          <div class="type-grid">
             <button class="type-btn active" data-val="blog" onclick="pickType(this)">Blog post</button>
             <button class="type-btn" data-val="marketing" onclick="pickType(this)">Marketing copy</button>
             <button class="type-btn" data-val="product" onclick="pickType(this)">Product description</button>
@@ -562,25 +189,17 @@
             <button class="type-btn" data-val="seo" onclick="pickType(this)">SEO article</button>
           </div>
         </div>
-
-        <div class="form-section">
+        <div class="fsec">
           <label>Length</label>
-          <div class="length-row" id="length-row">
-            <button class="length-btn active" data-val="short" onclick="pickLength(this)">
-              Short<span class="length-words">~300 words</span>
-            </button>
-            <button class="length-btn" data-val="medium" onclick="pickLength(this)">
-              Medium<span class="length-words">~800 words</span>
-            </button>
-            <button class="length-btn" data-val="long" onclick="pickLength(this)">
-              Long<span class="length-words">~1500 words</span>
-            </button>
+          <div class="len-row">
+            <button class="len-btn active" data-val="short" onclick="pickLen(this)">Short<span class="len-sub">~300 words</span></button>
+            <button class="len-btn" data-val="medium" onclick="pickLen(this)">Medium<span class="len-sub">~800 words</span></button>
+            <button class="len-btn" data-val="long" onclick="pickLen(this)">Long<span class="len-sub">~1500 words</span></button>
           </div>
         </div>
-
-        <div class="form-section">
+        <div class="fsec">
           <label>Tone</label>
-          <select class="tone-select" id="tone">
+          <select class="tone" id="tone">
             <option value="professional">Professional</option>
             <option value="conversational">Conversational</option>
             <option value="friendly">Friendly</option>
@@ -589,32 +208,39 @@
             <option value="humorous">Light-hearted</option>
           </select>
         </div>
-
-        <button class="generate-btn" id="gen-btn" onclick="generate()">
+        <button class="gen-btn" id="gen-btn" onclick="generate()">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
           Generate
         </button>
         <p class="gen-hint" id="gen-hint">Ready</p>
-
       </div>
     </div>
 
     <!-- OUTPUT -->
-    <div class="pane" id="pane-output">
-      <div class="output-pane">
-        <div class="output-toolbar">
-          <div class="output-meta" id="output-meta">No content yet</div>
-          <div class="toolbar-btns">
-            <button class="btn-action" id="copy-btn" onclick="doCopy()" disabled>Copy</button>
-            <button class="btn-action" id="dl-btn" onclick="doDownload()" disabled>Save</button>
-          </div>
+    <div class="pane pane-output" id="pane-output">
+      <div class="output-toolbar">
+        <div class="output-meta" id="output-meta">No content yet</div>
+        <div class="toolbar-btns">
+          <button class="btn-act" id="copy-btn" onclick="doCopy()" disabled>Copy</button>
+          <button class="btn-act" id="dl-btn" onclick="doDownload()" disabled>Save</button>
         </div>
-        <div class="output-body" id="output-body">
-          <div class="empty-state">
-            <div class="empty-icon">✦</div>
-            <h3>Nothing here yet</h3>
-            <p>Fill in the form and hit Generate.</p>
-          </div>
+      </div>
+      <div class="output-body" id="output-body">
+        <div class="empty-state">
+          <div class="empty-icon">✦</div>
+          <h3>Nothing here yet</h3>
+          <p>Fill in the form and hit Generate.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- HISTORY -->
+    <div class="pane pane-history" id="pane-history">
+      <div class="hist-inner" id="hist-inner">
+        <div class="hist-empty">
+          <div class="empty-icon">📄</div>
+          <h3>No history yet</h3>
+          <p>Your generated content will appear here.</p>
         </div>
       </div>
     </div>
@@ -626,29 +252,21 @@
 <script>
   let sessionToken = null;
   let currentType = 'blog';
-  let currentLength = 'short';
+  let currentLen = 'short';
   let rawContent = '';
-  let currentTab = 'form';
 
-  // ─── LOGIN ───
-
+  // ── LOGIN ──
   async function doLogin() {
     const email = document.getElementById('l-email').value.trim();
     const pass = document.getElementById('l-pass').value;
     const errEl = document.getElementById('login-error');
     const btn = document.getElementById('login-btn');
     if (!email || !pass) return;
-
     errEl.style.display = 'none';
     btn.textContent = 'Signing in...';
     btn.disabled = true;
-
     try {
-      const res = await fetch('/auth/login', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({email, password: pass})
-      });
+      const res = await fetch('/auth/login', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({email, password: pass})});
       const data = await res.json();
       if (res.ok) {
         sessionToken = data.session_token;
@@ -660,7 +278,7 @@
         btn.textContent = 'Sign in';
         btn.disabled = false;
       }
-    } catch (e) {
+    } catch(e) {
       errEl.textContent = 'Connection error. Please try again.';
       errEl.style.display = 'block';
       btn.textContent = 'Sign in';
@@ -670,13 +288,13 @@
 
   function bootApp(user) {
     document.getElementById('login-screen').style.display = 'none';
-    const app = document.getElementById('app-screen');
-    app.style.display = 'flex';
+    document.getElementById('app-screen').style.display = 'flex';
     updateUsage(user.articles_used, user.articles_limit);
     if (user.status !== 'active') {
       document.getElementById('gen-btn').disabled = true;
       document.getElementById('gen-hint').textContent = 'No active subscription';
     }
+    loadHistory();
   }
 
   function updateUsage(used, limit) {
@@ -684,9 +302,7 @@
   }
 
   async function signOut() {
-    if (sessionToken) {
-      fetch('/auth/logout', {method: 'POST', headers: {'X-Session-Token': sessionToken}}).catch(() => {});
-    }
+    if (sessionToken) fetch('/auth/logout', {method:'POST', headers:{'X-Session-Token':sessionToken}}).catch(()=>{});
     sessionStorage.removeItem('wai_session');
     sessionToken = null;
     document.getElementById('app-screen').style.display = 'none';
@@ -695,124 +311,141 @@
     document.getElementById('l-pass').value = '';
   }
 
-  // Auto login from session
   window.addEventListener('load', async () => {
     const saved = sessionStorage.getItem('wai_session');
     if (!saved) return;
     try {
-      const res = await fetch('/auth/me', {headers: {'X-Session-Token': saved}});
-      if (res.ok) {
-        sessionToken = saved;
-        bootApp(await res.json());
-      } else {
-        sessionStorage.removeItem('wai_session');
-      }
-    } catch (e) {}
+      const res = await fetch('/auth/me', {headers:{'X-Session-Token':saved}});
+      if (res.ok) { sessionToken = saved; bootApp(await res.json()); }
+      else sessionStorage.removeItem('wai_session');
+    } catch(e) {}
   });
 
-  ['l-email', 'l-pass'].forEach(id => {
-    document.getElementById(id).addEventListener('keydown', e => {
-      if (e.key === 'Enter') doLogin();
-    });
-  });
+  ['l-email','l-pass'].forEach(id => document.getElementById(id).addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); }));
 
-  // ─── CONTROLS ───
+  // ── CONTROLS ──
+  function pickType(btn) { document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('active')); btn.classList.add('active'); currentType = btn.dataset.val; }
+  function pickLen(btn) { document.querySelectorAll('.len-btn').forEach(b => b.classList.remove('active')); btn.classList.add('active'); currentLen = btn.dataset.val; }
 
-  function pickType(btn) {
-    document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('active'));
+  // ── TABS ──
+  function goTab(tab, btn) {
+    document.querySelectorAll('.tnav-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
-    currentType = btn.dataset.val;
+    document.querySelectorAll('.pane').forEach(p => p.classList.remove('active'));
+    document.getElementById('pane-' + tab).classList.add('active');
   }
 
-  function pickLength(btn) {
-    document.querySelectorAll('.length-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    currentLength = btn.dataset.val;
-  }
-
-  // ─── TABS (mobile only) ───
-
-  function switchTab(tab, btn) {
-    currentTab = tab;
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    document.getElementById('pane-form').classList.toggle('active', tab === 'form');
-    document.getElementById('pane-output').classList.toggle('active', tab === 'output');
-  }
-
-  // ─── GENERATE ───
-
+  // ── GENERATE ──
   async function generate() {
     const topic = document.getElementById('topic').value.trim();
     const tone = document.getElementById('tone').value;
     const btn = document.getElementById('gen-btn');
     const hint = document.getElementById('gen-hint');
-
     if (!topic) {
-      document.getElementById('topic').focus();
-      document.getElementById('topic').style.borderColor = '#f87171';
-      setTimeout(() => document.getElementById('topic').style.borderColor = '', 1500);
+      const el = document.getElementById('topic');
+      el.focus(); el.style.borderColor = '#f87171';
+      setTimeout(() => el.style.borderColor = '', 1500);
       return;
     }
-
     btn.disabled = true;
     btn.innerHTML = `<div class="dots" style="padding:0;gap:4px"><span></span><span></span><span></span></div>`;
     hint.textContent = 'Writing... about 15 seconds';
-
     document.getElementById('output-body').innerHTML = `<div class="dots"><span></span><span></span><span></span></div>`;
     document.getElementById('copy-btn').disabled = true;
     document.getElementById('dl-btn').disabled = true;
-
-    // Switch to output tab on mobile
+    // Switch to output on mobile
     if (window.innerWidth < 768) {
-      const outputTabBtn = document.querySelector('.tab-btn:nth-child(2)');
-      switchTab('output', outputTabBtn);
+      const outTabBtn = document.querySelector('.tnav-btn:nth-child(2)');
+      goTab('output', outTabBtn);
     }
-
     const start = Date.now();
-
     try {
       const res = await fetch('/generate', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json', 'X-Session-Token': sessionToken},
-        body: JSON.stringify({topic, style: currentType, length: currentLength, tone})
+        method:'POST',
+        headers:{'Content-Type':'application/json','X-Session-Token':sessionToken},
+        body: JSON.stringify({topic, style: currentType, length: currentLen, tone})
       });
       const data = await res.json();
-
       if (res.ok && data.status === 'success') {
         rawContent = data.content;
         const words = rawContent.trim().split(/\s+/).length;
-        const elapsed = ((Date.now() - start) / 1000).toFixed(1);
+        const elapsed = ((Date.now()-start)/1000).toFixed(1);
         const typeLabel = document.querySelector('.type-btn.active')?.textContent || currentType;
-
         document.getElementById('output-body').innerHTML = `<div class="output-content">${renderMd(rawContent)}</div>`;
         document.getElementById('output-meta').innerHTML = `<strong>${typeLabel}</strong> · ${words} words · ${elapsed}s`;
         document.getElementById('copy-btn').disabled = false;
         document.getElementById('dl-btn').disabled = false;
-
         if (data.usage) updateUsage(data.usage.articles_used, data.usage.articles_limit);
         hint.textContent = `Done. ${data.usage?.remaining ?? ''} left this month.`;
-      } else if (res.status === 401 || res.status === 403) {
-        if (res.status === 401) { signOut(); return; }
-        document.getElementById('output-body').innerHTML = `<div class="empty-state"><div class="empty-icon">⚠️</div><h3>Subscription needed</h3><p><a href="/#pricing" style="color:var(--accent)">Upgrade your plan</a> to keep writing.</p></div>`;
-        hint.textContent = 'No active subscription';
+        loadHistory(); // refresh history
+      } else if (res.status === 401) {
+        signOut();
       } else if (res.status === 429) {
         document.getElementById('output-body').innerHTML = `<div class="empty-state"><div class="empty-icon">⚠️</div><h3>Monthly limit reached</h3><p><a href="/#pricing" style="color:var(--accent)">Upgrade your plan</a> for more articles.</p></div>`;
         hint.textContent = 'Monthly limit reached';
       } else {
         throw new Error(data.detail || 'Generation failed');
       }
-    } catch (e) {
+    } catch(e) {
       document.getElementById('output-body').innerHTML = `<div class="empty-state"><div class="empty-icon">⚠️</div><h3>Something went wrong</h3><p>${e.message}</p></div>`;
       hint.textContent = 'Error — please try again';
     }
-
     btn.disabled = false;
     btn.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg> Generate`;
   }
 
-  // ─── RENDER MARKDOWN ───
+  // ── HISTORY ──
+  async function loadHistory() {
+    if (!sessionToken) return;
+    try {
+      const res = await fetch('/history', {headers:{'X-Session-Token':sessionToken}});
+      if (!res.ok) return;
+      const data = await res.json();
+      renderHistory(data.history || []);
+    } catch(e) {}
+  }
 
+  function renderHistory(items) {
+    const container = document.getElementById('hist-inner');
+    if (!items.length) {
+      container.innerHTML = `<div class="hist-empty"><div class="empty-icon">📄</div><h3>No history yet</h3><p>Your generated content will appear here.</p></div>`;
+      return;
+    }
+    container.innerHTML = items.map(item => {
+      const date = new Date(item.created_at * 1000);
+      const dateStr = date.toLocaleDateString('en-GB', {day:'numeric', month:'short'}) + ' ' + date.toLocaleTimeString('en-GB', {hour:'2-digit', minute:'2-digit'});
+      const preview = item.content.replace(/[#*_]/g,'').slice(0, 120).trim() + '...';
+      return `
+        <div class="hist-card" onclick="loadFromHistory(${JSON.stringify(item.content).replace(/'/g,"&#39;")}, ${JSON.stringify(item.topic)}, '${item.style}')">
+          <div class="hist-card-header">
+            <div class="hist-topic">${escHtml(item.topic)}</div>
+            <div class="hist-date">${dateStr}</div>
+          </div>
+          <div class="hist-meta">
+            <span class="hist-tag">${item.style}</span>
+            <span class="hist-tag">${item.length}</span>
+            <span class="hist-tag">${item.words} words</span>
+          </div>
+          <div class="hist-preview">${escHtml(preview)}</div>
+        </div>`;
+    }).join('');
+  }
+
+  function loadFromHistory(content, topic, style) {
+    rawContent = content;
+    const words = content.trim().split(/\s+/).length;
+    document.getElementById('output-body').innerHTML = `<div class="output-content">${renderMd(content)}</div>`;
+    document.getElementById('output-meta').innerHTML = `<strong>${style}</strong> · ${words} words · from history`;
+    document.getElementById('copy-btn').disabled = false;
+    document.getElementById('dl-btn').disabled = false;
+    // Switch to output tab
+    if (window.innerWidth < 768) {
+      const outTabBtn = document.querySelector('.tnav-btn:nth-child(2)');
+      goTab('output', outTabBtn);
+    }
+  }
+
+  // ── RENDER ──
   function renderMd(text) {
     return text
       .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
@@ -822,47 +455,37 @@
       .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
       .replace(/\*(.+?)\*/g,'<em>$1</em>')
       .replace(/^[-*] (.+)$/gm,'<li>$1</li>')
-      .replace(/(<li>[\s\S]*?<\/li>)(\s*<li>)/g,'$1$2')
       .split(/\n\n+/)
-      .map(b => {
-        if (/^<(h[123]|li|ul)/.test(b.trim())) return b;
-        return `<p>${b.replace(/\n/g,' ')}</p>`;
-      }).join('\n');
+      .map(b => /^<(h[123]|li)/.test(b.trim()) ? b : `<p>${b.replace(/\n/g,' ')}</p>`)
+      .join('\n');
   }
 
-  // ─── ACTIONS ───
+  function escHtml(str) {
+    return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
 
+  // ── ACTIONS ──
   function doCopy() {
     if (!rawContent) return;
-    navigator.clipboard.writeText(rawContent)
-      .then(() => showToast('Copied to clipboard'))
-      .catch(() => {
-        // Fallback for older mobile browsers
-        const ta = document.createElement('textarea');
-        ta.value = rawContent;
-        ta.style.position = 'fixed'; ta.style.opacity = '0';
-        document.body.appendChild(ta);
-        ta.select(); document.execCommand('copy');
-        document.body.removeChild(ta);
-        showToast('Copied');
-      });
+    navigator.clipboard.writeText(rawContent).then(() => showToast('Copied')).catch(() => {
+      const ta = document.createElement('textarea');
+      ta.value = rawContent; ta.style.cssText = 'position:fixed;opacity:0';
+      document.body.appendChild(ta); ta.select(); document.execCommand('copy');
+      document.body.removeChild(ta); showToast('Copied');
+    });
   }
 
   function doDownload() {
     if (!rawContent) return;
-    const slug = document.getElementById('topic').value.trim().slice(0,40)
-      .replace(/[^a-z0-9 ]/gi,'').replace(/\s+/g,'-').toLowerCase();
-    const blob = new Blob([rawContent], {type: 'text/plain'});
+    const slug = document.getElementById('topic').value.trim().slice(0,40).replace(/[^a-z0-9 ]/gi,'').replace(/\s+/g,'-').toLowerCase();
     const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = `writeai-${slug || 'content'}.txt`;
-    a.click();
+    a.href = URL.createObjectURL(new Blob([rawContent],{type:'text/plain'}));
+    a.download = `writeai-${slug||'content'}.txt`; a.click();
   }
 
   function showToast(msg) {
     const t = document.getElementById('toast');
-    t.textContent = msg;
-    t.classList.add('show');
+    t.textContent = msg; t.classList.add('show');
     setTimeout(() => t.classList.remove('show'), 2200);
   }
 </script>
