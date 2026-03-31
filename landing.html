@@ -3,1444 +3,573 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>WriteAI – Content that writes itself</title>
-  <meta name="description" content="Generate blog posts, product descriptions and marketing copy in seconds. WriteAI handles the words so you can focus on your business.">
+  <title>WriteAI – Your content, done.</title>
+  <meta name="description" content="WriteAI generates publish-ready blog posts, product descriptions, and marketing copy. From £9.99/month.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,400&display=swap" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
-
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
     :root {
       --black: #080808;
       --dark: #111;
-      --card: #161616;
-      --border: rgba(255,255,255,0.08);
-      --text: #f5f5f7;
-      --muted: rgba(245,245,247,0.5);
+      --card: #141414;
+      --border: rgba(255,255,255,0.07);
+      --text: #f0f0f0;
+      --muted: rgba(240,240,240,0.5);
       --accent: #a3e635;
-      --accent-glow: rgba(163,230,53,0.25);
-      --white: #ffffff;
+      --accent-dim: rgba(163,230,53,0.15);
+      --white: #fff;
     }
-
     html { scroll-behavior: smooth; }
-
-    body {
-      font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
-      background: var(--black);
-      color: var(--text);
-      overflow-x: hidden;
-      -webkit-font-smoothing: antialiased;
-    }
-
+    body { font-family: "Inter", -apple-system, sans-serif; background: var(--black); color: var(--text); -webkit-font-smoothing: antialiased; overflow-x: hidden; line-height: 1.6; }
     ::selection { background: var(--accent); color: #000; }
+    a { color: inherit; text-decoration: none; }
+    img { display: block; max-width: 100%; }
 
-    /* ─── NAV ─── */
+    /* NAV */
     nav {
-      position: fixed;
-      top: 0; left: 0; right: 0;
-      z-index: 999;
-      padding: 0 40px;
-      height: 64px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      padding: 0 48px; height: 64px;
+      display: flex; align-items: center; justify-content: space-between;
       transition: background 0.4s, border-color 0.4s;
     }
-
-    nav.scrolled {
-      background: rgba(8,8,8,0.85);
-      backdrop-filter: blur(20px);
-      border-bottom: 1px solid var(--border);
-    }
-
-    .logo {
-      font-size: 20px;
-      font-weight: 800;
-      letter-spacing: -0.5px;
-      color: var(--white);
-    }
+    nav.scrolled { background: rgba(8,8,8,0.92); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border); }
+    .logo { font-size: 19px; font-weight: 800; letter-spacing: -0.5px; color: var(--white); }
     .logo span { color: var(--accent); }
-
-    .nav-links {
-      display: flex;
-      gap: 32px;
-      list-style: none;
-    }
-    .nav-links a {
-      color: var(--muted);
-      font-size: 14px;
-      font-weight: 500;
-      text-decoration: none;
-      transition: color 0.2s;
-    }
+    .nav-links { display: flex; gap: 32px; list-style: none; }
+    .nav-links a { color: var(--muted); font-size: 14px; font-weight: 500; transition: color 0.2s; }
     .nav-links a:hover { color: var(--white); }
+    .nav-actions { display: flex; gap: 10px; align-items: center; }
+    .btn-ghost { color: var(--muted); font-size: 14px; font-weight: 500; padding: 8px 16px; border-radius: 8px; transition: color 0.2s; }
+    .btn-ghost:hover { color: var(--white); }
+    .btn-nav { background: var(--white); color: #000; padding: 9px 20px; border-radius: 8px; font-size: 14px; font-weight: 700; transition: transform 0.15s, box-shadow 0.15s; }
+    .btn-nav:hover { transform: scale(1.03); box-shadow: 0 0 0 3px rgba(255,255,255,0.12); }
 
-    .nav-cta {
-      background: var(--white);
-      color: #000;
-      padding: 9px 22px;
-      border-radius: 100px;
-      font-size: 14px;
-      font-weight: 700;
-      text-decoration: none;
-      transition: transform 0.2s, box-shadow 0.2s;
-    }
-    .nav-cta:hover {
-      transform: scale(1.04);
-      box-shadow: 0 0 0 4px rgba(255,255,255,0.12);
-    }
-
-    /* ─── HERO ─── */
+    /* HERO */
     .hero {
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      padding: 120px 24px 80px;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .hero-glow {
-      position: absolute;
-      width: 700px;
-      height: 700px;
-      border-radius: 50%;
-      background: radial-gradient(circle, rgba(163,230,53,0.12) 0%, transparent 70%);
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -60%);
-      pointer-events: none;
-    }
-
-    .hero-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      background: rgba(163,230,53,0.1);
-      border: 1px solid rgba(163,230,53,0.3);
-      color: var(--accent);
-      font-size: 12px;
-      font-weight: 600;
-      letter-spacing: 0.5px;
-      padding: 6px 16px;
-      border-radius: 100px;
-      margin-bottom: 32px;
-    }
-
-    .hero-badge::before {
-      content: "";
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      background: var(--accent);
-      animation: pulse 2s infinite;
-    }
-
-    @keyframes pulse {
-      0%, 100% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.5; transform: scale(1.3); }
-    }
-
-    h1 {
-      font-size: clamp(44px, 8vw, 88px);
-      font-weight: 900;
-      line-height: 1.0;
-      letter-spacing: -3px;
-      color: var(--white);
-      margin-bottom: 24px;
-      max-width: 900px;
-    }
-
-    h1 .accent-word {
-      background: linear-gradient(135deg, var(--accent), #86efac);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-
-    .hero-sub {
-      font-size: clamp(16px, 2.5vw, 20px);
-      color: var(--muted);
-      max-width: 520px;
-      line-height: 1.6;
-      font-weight: 400;
-      margin-bottom: 48px;
-    }
-
-    .hero-actions {
-      display: flex;
-      gap: 14px;
-      justify-content: center;
-      flex-wrap: wrap;
-      margin-bottom: 80px;
-    }
-
-    .btn-primary {
-      background: var(--accent);
-      color: #000;
-      padding: 16px 36px;
-      border-radius: 100px;
-      font-size: 16px;
-      font-weight: 700;
-      border: none;
-      cursor: pointer;
-      font-family: inherit;
-      text-decoration: none;
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      transition: transform 0.2s, box-shadow 0.2s;
-    }
-
-    .btn-primary:hover {
-      transform: scale(1.04);
-      box-shadow: 0 0 32px var(--accent-glow);
-    }
-
-    .btn-secondary {
-      background: transparent;
-      color: var(--text);
-      padding: 16px 36px;
-      border-radius: 100px;
-      font-size: 16px;
-      font-weight: 600;
-      border: 1px solid var(--border);
-      cursor: pointer;
-      font-family: inherit;
-      text-decoration: none;
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      transition: background 0.2s, border-color 0.2s;
-    }
-
-    .btn-secondary:hover {
-      background: rgba(255,255,255,0.06);
-      border-color: rgba(255,255,255,0.2);
-    }
-
-    /* ─── STATS BAR ─── */
-    .stats-bar {
-      border-top: 1px solid var(--border);
-      border-bottom: 1px solid var(--border);
-      padding: 40px 24px;
-      display: flex;
-      justify-content: center;
-      gap: 0;
-      overflow: hidden;
-    }
-
-    .stat {
-      padding: 0 48px;
-      text-align: center;
-      position: relative;
-      transform: translateY(20px);
-    }
-
-    .stat:not(:last-child)::after {
-      content: "";
-      position: absolute;
-      right: 0;
-      top: 10%;
-      height: 80%;
-      width: 1px;
-      background: var(--border);
-    }
-
-    .stat-num {
-      font-size: clamp(32px, 4vw, 48px);
-      font-weight: 900;
-      letter-spacing: -2px;
-      color: var(--white);
-      line-height: 1;
-      margin-bottom: 6px;
-    }
-
-    .stat-label {
-      font-size: 13px;
-      color: var(--muted);
-      font-weight: 500;
-    }
-
-    /* ─── PROBLEM SECTION ─── */
-    .problem-section {
-      padding: 120px 24px;
-      max-width: 800px;
-      margin: 0 auto;
-      text-align: center;
-    }
-
-    .eyebrow {
-      font-size: 12px;
-      font-weight: 700;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      color: var(--muted);
-      margin-bottom: 20px;
-    }
-
-    .section-title {
-      font-size: clamp(32px, 5vw, 54px);
-      font-weight: 900;
-      letter-spacing: -2px;
-      line-height: 1.05;
-      color: var(--white);
-      margin-bottom: 20px;
-    }
-
-    .section-body {
-      font-size: 18px;
-      color: var(--muted);
-      line-height: 1.7;
-      max-width: 560px;
-      margin: 0 auto;
-    }
-
-    /* ─── CONTENT SHOWCASE ─── */
-    .showcase-section {
-      padding: 0 24px 120px;
-      max-width: 1100px;
-      margin: 0 auto;
-    }
-
-    .showcase-tabs {
-      display: flex;
-      gap: 8px;
-      justify-content: center;
-      margin-bottom: 40px;
-      flex-wrap: wrap;
-    }
-
-    .stab {
-      padding: 10px 24px;
-      border-radius: 100px;
-      font-size: 14px;
-      font-weight: 600;
-      cursor: pointer;
-      border: 1px solid var(--border);
-      background: transparent;
-      color: var(--muted);
-      font-family: inherit;
-      transition: all 0.2s;
-    }
-
-    .stab.active, .stab:hover {
-      background: var(--white);
-      color: #000;
-      border-color: var(--white);
-    }
-
-    .showcase-card {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 24px;
-      overflow: hidden;
-      display: none;
-      transform: translateY(20px);
-    }
-
-    .showcase-card.active {
-      display: block;
-    }
-
-    .card-header {
-      padding: 16px 24px;
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .card-dots {
-      display: flex;
-      gap: 6px;
-    }
-
-    .dot {
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-    }
-
-    .dot-r { background: #ff5f57; }
-    .dot-y { background: #febc2e; }
-    .dot-g { background: #28c840; }
-
-    .card-tag {
-      background: rgba(163,230,53,0.12);
-      color: var(--accent);
-      font-size: 11px;
-      font-weight: 700;
-      letter-spacing: 0.5px;
-      text-transform: uppercase;
-      padding: 4px 12px;
-      border-radius: 100px;
-      margin-left: auto;
-    }
-
-    .card-body {
-      padding: 40px 48px;
-    }
-
-    .card-body h2 {
-      font-size: clamp(20px, 3vw, 28px);
-      font-weight: 800;
-      letter-spacing: -0.5px;
-      color: var(--white);
-      margin-bottom: 20px;
-      line-height: 1.2;
-    }
-
-    .card-body p {
-      font-size: 16px;
-      color: rgba(245,245,247,0.7);
-      line-height: 1.8;
-      margin-bottom: 16px;
-    }
-
-    .card-body p:last-child { margin-bottom: 0; }
-
-    .card-body h3 {
-      font-size: 17px;
-      font-weight: 700;
-      color: var(--white);
-      margin: 24px 0 10px;
-    }
-
-    .card-meta {
-      padding: 16px 24px;
-      border-top: 1px solid var(--border);
-      display: flex;
-      gap: 12px;
-      flex-wrap: wrap;
-    }
-
-    .meta-tag {
-      font-size: 11px;
-      font-weight: 600;
-      color: var(--muted);
-      background: rgba(255,255,255,0.05);
-      padding: 4px 12px;
-      border-radius: 100px;
-      border: 1px solid var(--border);
-    }
-
-    /* ─── FEATURES ─── */
-    .features-section {
-      padding: 120px 24px;
-      background: var(--dark);
-      border-top: 1px solid var(--border);
-      border-bottom: 1px solid var(--border);
-    }
-
-    .features-inner {
-      max-width: 1000px;
-      margin: 0 auto;
-    }
-
-    .features-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 2px;
-      margin-top: 64px;
-      border: 1px solid var(--border);
-      border-radius: 24px;
-      overflow: hidden;
-    }
-
-    .feature-tile {
-      padding: 36px;
-      background: var(--card);
-      transition: background 0.3s;
-      transform: translateY(20px);
-    }
-
-    .feature-tile:hover { background: #1e1e1e; }
-
-    .feature-icon-wrap {
-      width: 48px;
-      height: 48px;
-      border-radius: 14px;
-      background: rgba(163,230,53,0.1);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-bottom: 20px;
-      font-size: 22px;
-    }
-
-    .feature-tile h3 {
-      font-size: 17px;
-      font-weight: 700;
-      color: var(--white);
-      margin-bottom: 10px;
-      letter-spacing: -0.3px;
-    }
-
-    .feature-tile p {
-      font-size: 14px;
-      color: var(--muted);
-      line-height: 1.7;
-    }
-
-    /* ─── PRICING ─── */
-    .pricing-section {
-      padding: 120px 24px;
-      max-width: 1000px;
-      margin: 0 auto;
-    }
-
-    .pricing-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
-      gap: 16px;
-      margin-top: 64px;
-    }
-
-    .plan-card {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 24px;
-      padding: 36px;
-      position: relative;
-      transition: transform 0.3s, border-color 0.3s;
-      transform: translateY(30px);
-    }
-
-    .plan-card:hover { transform: translateY(-4px); }
-
-    .plan-card.featured {
-      border-color: var(--accent);
-      background: linear-gradient(135deg, rgba(163,230,53,0.06), var(--card) 60%);
-    }
-
-    .featured-chip {
-      position: absolute;
-      top: -13px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: var(--accent);
-      color: #000;
-      font-size: 10px;
-      font-weight: 800;
-      letter-spacing: 1px;
-      text-transform: uppercase;
-      padding: 4px 14px;
-      border-radius: 100px;
-      white-space: nowrap;
-    }
-
-    .plan-label {
-      font-size: 11px;
-      font-weight: 700;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      color: var(--muted);
-      margin-bottom: 20px;
-    }
-
-    .plan-price {
-      font-size: 52px;
-      font-weight: 900;
-      letter-spacing: -2.5px;
-      color: var(--white);
-      line-height: 1;
-      margin-bottom: 4px;
-    }
-
-    .plan-price .currency {
-      font-size: 24px;
-      vertical-align: super;
-      letter-spacing: -0.5px;
-    }
-
-    .plan-cadence {
-      font-size: 13px;
-      color: var(--muted);
-      margin-bottom: 32px;
-    }
-
-    .plan-sep {
-      height: 1px;
-      background: var(--border);
-      margin-bottom: 24px;
-    }
-
-    .plan-features {
-      list-style: none;
-      margin-bottom: 32px;
-    }
-
-    .plan-features li {
-      font-size: 14px;
-      color: rgba(245,245,247,0.75);
-      padding: 8px 0;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      border-bottom: 1px solid rgba(255,255,255,0.04);
-    }
-
-    .plan-features li:last-child { border-bottom: none; }
-
-    .check {
-      width: 18px;
-      height: 18px;
-      border-radius: 50%;
-      background: rgba(163,230,53,0.15);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-      font-size: 10px;
-      color: var(--accent);
-    }
-
-    .plan-btn {
-      width: 100%;
-      padding: 14px;
-      border-radius: 100px;
-      font-size: 15px;
-      font-weight: 700;
-      font-family: inherit;
-      cursor: pointer;
-      transition: all 0.2s;
-      border: none;
-    }
-
-    .plan-btn-main {
-      background: var(--accent);
-      color: #000;
-    }
-
-    .plan-btn-main:hover {
-      box-shadow: 0 0 24px var(--accent-glow);
-      transform: scale(1.02);
-    }
-
-    .plan-btn-ghost {
-      background: rgba(255,255,255,0.06);
-      color: var(--white);
-      border: 1px solid var(--border);
-    }
-
-    .plan-btn-ghost:hover {
-      background: rgba(255,255,255,0.1);
-    }
-
-    /* ─── HOW IT WORKS ─── */
-    .how-section {
-      padding: 120px 24px;
-      background: var(--dark);
-      border-top: 1px solid var(--border);
-    }
-
-    .how-inner {
-      max-width: 720px;
-      margin: 0 auto;
-    }
-
-    .timeline {
-      margin-top: 64px;
-      display: flex;
-      flex-direction: column;
-      gap: 0;
-      position: relative;
-    }
-
-    .timeline::before {
-      content: "";
-      position: absolute;
-      left: 23px;
-      top: 0;
-      bottom: 0;
-      width: 1px;
-      background: linear-gradient(to bottom, var(--accent), transparent);
-    }
-
-    .tl-item {
-      display: grid;
-      grid-template-columns: 48px 1fr;
-      gap: 24px;
-      padding-bottom: 48px;
-      transform: translateX(-20px);
-    }
-
-    .tl-num {
-      width: 46px;
-      height: 46px;
-      border-radius: 50%;
-      background: var(--card);
-      border: 1px solid var(--border);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 14px;
-      font-weight: 800;
-      color: var(--accent);
-      flex-shrink: 0;
-      position: relative;
-      z-index: 1;
-    }
-
-    .tl-content {
-      padding-top: 10px;
-    }
-
-    .tl-content h3 {
-      font-size: 18px;
-      font-weight: 700;
-      color: var(--white);
-      margin-bottom: 8px;
-      letter-spacing: -0.3px;
-    }
-
-    .tl-content p {
-      font-size: 15px;
-      color: var(--muted);
-      line-height: 1.7;
-    }
-
-    /* ─── FAQ ─── */
-    .faq-section {
-      padding: 120px 24px;
-      max-width: 720px;
-      margin: 0 auto;
-    }
-
-    .faq-section .section-title { text-align: center; }
-    .faq-section .eyebrow { text-align: center; }
-
-    .faq-list {
-      margin-top: 48px;
-      display: flex;
-      flex-direction: column;
-      gap: 0;
-    }
-
-    .faq-item {
-      border-bottom: 1px solid var(--border);
-    }
-
-    .faq-q {
-      padding: 22px 0;
-      font-size: 16px;
-      font-weight: 600;
-      color: var(--white);
-      cursor: pointer;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 16px;
-      user-select: none;
-    }
-
-    .faq-arrow {
-      width: 28px;
-      height: 28px;
-      border-radius: 50%;
-      background: rgba(255,255,255,0.06);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-      font-size: 14px;
-      transition: transform 0.3s, background 0.2s;
-    }
-
-    .faq-item.open .faq-arrow {
-      transform: rotate(45deg);
-      background: var(--accent);
-      color: #000;
-    }
-
-    .faq-a {
-      font-size: 15px;
-      color: var(--muted);
-      line-height: 1.7;
-      max-height: 0;
-      overflow: hidden;
-      transition: max-height 0.4s ease, padding 0.3s;
-    }
-
-    .faq-item.open .faq-a {
-      max-height: 400px;
-      padding-bottom: 22px;
-    }
-
-    /* ─── FINAL CTA ─── */
-    .cta-section {
-      padding: 120px 24px;
-      text-align: center;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .cta-glow {
-      position: absolute;
-      width: 600px;
-      height: 600px;
-      border-radius: 50%;
-      background: radial-gradient(circle, rgba(163,230,53,0.1) 0%, transparent 70%);
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      pointer-events: none;
-    }
-
-    .cta-section h2 {
-      font-size: clamp(36px, 6vw, 68px);
-      font-weight: 900;
-      letter-spacing: -2.5px;
-      color: var(--white);
-      margin-bottom: 20px;
-      line-height: 1.05;
-    }
-
-    .cta-section p {
-      font-size: 18px;
-      color: var(--muted);
-      margin-bottom: 48px;
-    }
-
-    .cta-section .btn-primary {
-      font-size: 18px;
-      padding: 18px 44px;
-    }
-
-    .cta-note {
-      margin-top: 20px;
-      font-size: 13px;
-      color: var(--muted);
-    }
-
-    /* ─── FOOTER ─── */
-    footer {
-      border-top: 1px solid var(--border);
-      padding: 32px 40px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 16px;
-      flex-wrap: wrap;
-    }
-
+      min-height: 100vh; display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      text-align: center; padding: 120px 24px 80px;
+      position: relative; overflow: hidden;
+    }
+    .hero-bg {
+      position: absolute; inset: 0; pointer-events: none;
+      background: radial-gradient(ellipse 80% 60% at 50% 20%, rgba(163,230,53,0.07) 0%, transparent 70%);
+    }
+    .hero-kicker {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: var(--accent-dim); border: 1px solid rgba(163,230,53,0.25);
+      color: var(--accent); font-size: 12px; font-weight: 600; letter-spacing: 0.5px;
+      padding: 5px 14px; border-radius: 100px; margin-bottom: 32px;
+    }
+    .hero-kicker::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); animation: pulse 2s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(1.4)} }
+    h1 { font-size: clamp(42px, 7vw, 84px); font-weight: 900; line-height: 1.0; letter-spacing: -3px; color: var(--white); margin-bottom: 24px; max-width: 880px; }
+    h1 em { font-style: normal; background: linear-gradient(120deg, var(--accent), #d9f99d); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .hero-sub { font-size: clamp(16px, 2vw, 19px); color: var(--muted); max-width: 520px; line-height: 1.65; margin-bottom: 44px; font-weight: 400; }
+    .hero-ctas { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-bottom: 20px; }
+    .btn-primary { background: var(--accent); color: #000; padding: 15px 32px; border-radius: 10px; font-size: 15px; font-weight: 700; border: none; cursor: pointer; font-family: inherit; transition: transform 0.15s, box-shadow 0.15s; display: inline-flex; align-items: center; gap: 8px; }
+    .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 8px 32px rgba(163,230,53,0.3); }
+    .btn-outline { background: transparent; color: var(--text); padding: 15px 32px; border-radius: 10px; font-size: 15px; font-weight: 600; border: 1px solid var(--border); cursor: pointer; font-family: inherit; transition: border-color 0.15s, background 0.15s; display: inline-flex; align-items: center; gap: 8px; }
+    .btn-outline:hover { border-color: rgba(255,255,255,0.2); background: rgba(255,255,255,0.04); }
+    .hero-note { font-size: 13px; color: rgba(240,240,240,0.35); }
+
+    /* LOGOS / SOCIAL PROOF BAR */
+    .proof-bar { border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); padding: 28px 48px; display: flex; align-items: center; justify-content: center; gap: 48px; flex-wrap: wrap; }
+    .proof-item { display: flex; align-items: center; gap: 10px; }
+    .proof-num { font-size: 22px; font-weight: 800; color: var(--white); letter-spacing: -1px; }
+    .proof-label { font-size: 13px; color: var(--muted); }
+
+    /* SECTIONS */
+    .section { padding: 96px 24px; }
+    .section-inner { max-width: 1040px; margin: 0 auto; }
+    .eyebrow { font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--accent); margin-bottom: 14px; }
+    .section-heading { font-size: clamp(28px, 4vw, 48px); font-weight: 900; letter-spacing: -1.5px; color: var(--white); line-height: 1.1; margin-bottom: 16px; }
+    .section-sub { font-size: 17px; color: var(--muted); max-width: 520px; line-height: 1.65; }
+    .centered { text-align: center; }
+    .centered .section-sub { margin: 0 auto; }
+
+    /* PROBLEM / VALUE SECTION */
+    .value-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; margin-top: 56px; border-radius: 16px; overflow: hidden; border: 1px solid var(--border); }
+    .value-cell { background: var(--card); padding: 36px; }
+    .value-cell.accent-cell { background: linear-gradient(135deg, rgba(163,230,53,0.08), var(--card)); border-left: 2px solid var(--accent); }
+    .value-cell h3 { font-size: 15px; font-weight: 700; color: var(--white); margin-bottom: 8px; letter-spacing: -0.2px; }
+    .value-cell p { font-size: 14px; color: var(--muted); line-height: 1.7; }
+    .value-cell .val-icon { font-size: 24px; margin-bottom: 16px; }
+
+    /* SAMPLES */
+    .samples-section { background: #0e0e0e; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+    .sample-tabs { display: flex; gap: 8px; justify-content: center; margin-bottom: 36px; flex-wrap: wrap; }
+    .stab { padding: 9px 22px; border-radius: 100px; font-size: 13px; font-weight: 600; cursor: pointer; border: 1px solid var(--border); background: transparent; color: var(--muted); font-family: inherit; transition: all 0.15s; }
+    .stab.active { background: var(--white); color: #000; border-color: var(--white); }
+    .sample-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; max-width: 800px; margin: 0 auto; display: none; }
+    .sample-card.active { display: block; }
+    .sample-header { background: var(--dark); padding: 14px 20px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid var(--border); }
+    .dots { display: flex; gap: 6px; }
+    .dot { width: 10px; height: 10px; border-radius: 50%; }
+    .dot-r { background: #ff5f57; } .dot-y { background: #febc2e; } .dot-g { background: #28c840; }
+    .sample-tag { margin-left: auto; background: var(--accent-dim); color: var(--accent); font-size: 11px; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; padding: 3px 10px; border-radius: 100px; }
+    .sample-body { padding: 36px 40px; }
+    .sample-body h2 { font-size: 20px; font-weight: 800; color: var(--white); margin-bottom: 16px; letter-spacing: -0.3px; }
+    .sample-body h3 { font-size: 16px; font-weight: 700; color: var(--white); margin: 20px 0 8px; }
+    .sample-body p { font-size: 15px; color: rgba(240,240,240,0.75); line-height: 1.8; margin-bottom: 14px; }
+    .sample-body p:last-child { margin-bottom: 0; }
+    .sample-meta-bar { padding: 14px 20px; border-top: 1px solid var(--border); display: flex; gap: 10px; flex-wrap: wrap; }
+    .meta-tag { font-size: 11px; font-weight: 600; color: var(--muted); background: rgba(255,255,255,0.05); padding: 3px 10px; border-radius: 100px; border: 1px solid var(--border); }
+
+    /* HOW IT WORKS */
+    .how-section { background: var(--dark); border-top: 1px solid var(--border); }
+    .steps { max-width: 640px; margin: 56px auto 0; position: relative; }
+    .steps::before { content:""; position:absolute; left:21px; top:0; bottom:0; width:1px; background: linear-gradient(to bottom, var(--accent), transparent); }
+    .step { display: grid; grid-template-columns: 44px 1fr; gap: 20px; padding-bottom: 44px; }
+    .step-n { width: 42px; height: 42px; background: var(--card); border: 1px solid var(--border); border-radius: 50%; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:800; color:var(--accent); flex-shrink:0; z-index:1; position:relative; }
+    .step-n.done { background: var(--accent-dim); border-color: rgba(163,230,53,0.3); }
+    .step h3 { font-size: 16px; font-weight: 700; color: var(--white); margin-bottom: 6px; padding-top: 10px; }
+    .step p { font-size: 14px; color: var(--muted); line-height: 1.7; }
+
+    /* PRICING */
+    .pricing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); gap: 16px; margin-top: 56px; }
+    .plan { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 32px; position: relative; transition: transform 0.2s; }
+    .plan:hover { transform: translateY(-3px); }
+    .plan.featured { border-color: var(--accent); background: linear-gradient(135deg, rgba(163,230,53,0.05), var(--card) 60%); }
+    .featured-chip { position:absolute; top:-11px; left:24px; background:var(--accent); color:#000; font-size:10px; font-weight:800; letter-spacing:1px; text-transform:uppercase; padding:3px 12px; border-radius:100px; }
+    .plan-name { font-size:11px; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:var(--muted); margin-bottom:16px; }
+    .plan-price { font-size:48px; font-weight:900; letter-spacing:-2px; color:var(--white); line-height:1; margin-bottom:4px; }
+    .plan-price sup { font-size:22px; vertical-align:super; letter-spacing:-0.5px; }
+    .plan-cadence { font-size:13px; color:var(--muted); margin-bottom:24px; }
+    .plan-sep { height:1px; background:var(--border); margin-bottom:20px; }
+    .plan-feats { list-style:none; margin-bottom:28px; }
+    .plan-feats li { font-size:14px; color:rgba(240,240,240,0.7); padding:7px 0; display:flex; gap:10px; border-bottom:1px solid rgba(255,255,255,0.04); align-items:baseline; }
+    .plan-feats li:last-child { border-bottom:none; }
+    .chk { color:var(--accent); font-weight:700; flex-shrink:0; }
+    .plan-btn { width:100%; padding:13px; border-radius:100px; font-size:14px; font-weight:700; font-family:inherit; cursor:pointer; transition:all 0.15s; border:none; }
+    .plan-btn-main { background:var(--accent); color:#000; }
+    .plan-btn-main:hover { box-shadow: 0 0 24px rgba(163,230,53,0.3); }
+    .plan-btn-ghost { background:transparent; color:var(--text); border:1px solid var(--border); }
+    .plan-btn-ghost:hover { border-color:rgba(255,255,255,0.25); background:rgba(255,255,255,0.04); }
+
+    /* FAQ */
+    .faq-list { max-width: 680px; margin: 48px auto 0; }
+    .faq-item { border-bottom: 1px solid var(--border); }
+    .faq-q { padding: 20px 0; font-size: 15px; font-weight: 600; color: var(--white); cursor: pointer; display: flex; justify-content: space-between; align-items: center; gap: 16px; user-select: none; }
+    .faq-icon { width: 26px; height: 26px; border-radius: 50%; background: rgba(255,255,255,0.06); display:flex; align-items:center; justify-content:center; font-size:14px; transition: transform 0.25s, background 0.2s; flex-shrink:0; }
+    .faq-item.open .faq-icon { transform: rotate(45deg); background: var(--accent); color: #000; }
+    .faq-a { font-size: 14px; color: var(--muted); line-height: 1.75; max-height: 0; overflow: hidden; transition: max-height 0.35s ease, padding 0.25s; }
+    .faq-item.open .faq-a { max-height: 400px; padding-bottom: 20px; }
+
+    /* FINAL CTA */
+    .cta-section { text-align: center; padding: 96px 24px; position: relative; overflow: hidden; }
+    .cta-bg { position:absolute; inset:0; background: radial-gradient(ellipse 60% 80% at 50% 50%, rgba(163,230,53,0.08), transparent 70%); pointer-events:none; }
+    .cta-section h2 { font-size: clamp(32px, 5vw, 60px); font-weight: 900; letter-spacing: -2px; color: var(--white); margin-bottom: 16px; line-height: 1.05; }
+    .cta-section p { font-size: 17px; color: var(--muted); margin-bottom: 40px; }
+
+    /* FOOTER */
+    footer { border-top: 1px solid var(--border); padding: 28px 48px; display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; }
     footer p { font-size: 13px; color: var(--muted); }
-
-    .footer-links {
-      display: flex;
-      gap: 24px;
-    }
-
-    .footer-links a {
-      font-size: 13px;
-      color: var(--muted);
-      text-decoration: none;
-      transition: color 0.2s;
-    }
-
+    .footer-links { display: flex; gap: 24px; }
+    .footer-links a { font-size: 13px; color: var(--muted); transition: color 0.15s; }
     .footer-links a:hover { color: var(--white); }
 
-    /* ─── MODAL ─── */
-    .modal-backdrop {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.8);
-      backdrop-filter: blur(8px);
-      z-index: 9999;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-    }
+    /* MODAL */
+    .modal-backdrop { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); backdrop-filter:blur(8px); z-index:9999; align-items:center; justify-content:center; padding:20px; }
+    .modal-backdrop.open { display:flex; }
+    .modal { background:var(--card); border:1px solid var(--border); border-radius:20px; padding:40px; width:100%; max-width:420px; animation: mIn 0.25s ease; position:relative; }
+    @keyframes mIn { from{opacity:0;transform:scale(0.96) translateY(8px)} to{opacity:1;transform:none} }
+    .modal-close { position:absolute; top:14px; right:14px; width:30px; height:30px; border-radius:50%; background:rgba(255,255,255,0.06); border:none; color:var(--muted); font-size:16px; cursor:pointer; display:flex; align-items:center; justify-content:center; }
+    .modal h2 { font-size:24px; font-weight:800; letter-spacing:-0.5px; color:var(--white); margin-bottom:6px; }
+    .modal-sub { font-size:14px; color:var(--muted); line-height:1.6; margin-bottom:24px; }
+    .modal-plan { background:rgba(163,230,53,0.08); border:1px solid rgba(163,230,53,0.2); border-radius:10px; padding:12px 16px; margin-bottom:20px; display:flex; justify-content:space-between; align-items:center; }
+    .modal-plan-name { font-size:14px; font-weight:700; color:var(--white); }
+    .modal-plan-price { font-size:14px; font-weight:700; color:var(--accent); }
+    .field { margin-bottom:14px; }
+    .field label { display:block; font-size:11px; font-weight:700; letter-spacing:0.5px; text-transform:uppercase; color:var(--muted); margin-bottom:7px; }
+    .field input { width:100%; background:rgba(255,255,255,0.04); border:1px solid var(--border); border-radius:10px; padding:12px 14px; font-size:15px; color:var(--white); font-family:inherit; outline:none; transition:border-color 0.2s, box-shadow 0.2s; }
+    .field input:focus { border-color:var(--accent); box-shadow:0 0 0 3px rgba(163,230,53,0.1); }
+    .field input::placeholder { color:rgba(240,240,240,0.2); }
+    .modal-err { font-size:13px; color:#f87171; margin-bottom:12px; display:none; }
+    .modal-submit { width:100%; padding:14px; background:var(--accent); color:#000; border:none; border-radius:100px; font-size:15px; font-weight:700; font-family:inherit; cursor:pointer; transition:all 0.15s; }
+    .modal-submit:hover { box-shadow:0 0 24px rgba(163,230,53,0.3); }
+    .modal-submit:disabled { opacity:0.5; cursor:not-allowed; box-shadow:none; }
+    .modal-guarantee { text-align:center; font-size:12px; color:var(--muted); margin-top:14px; }
 
-    .modal-backdrop.open { display: flex; }
-
-    .modal-box {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 24px;
-      padding: 44px;
-      width: 100%;
-      max-width: 440px;
-      position: relative;
-      animation: modalIn 0.3s ease;
-    }
-
-    @keyframes modalIn {
-      from { opacity: 0; transform: scale(0.95) translateY(10px); }
-      to { opacity: 1; transform: scale(1) translateY(0); }
-    }
-
-    .modal-close {
-      position: absolute;
-      top: 16px;
-      right: 16px;
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
-      background: rgba(255,255,255,0.06);
-      border: none;
-      color: var(--muted);
-      font-size: 18px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: background 0.2s;
-    }
-
-    .modal-close:hover { background: rgba(255,255,255,0.12); }
-
-    .modal-box h2 {
-      font-size: 26px;
-      font-weight: 800;
-      letter-spacing: -0.8px;
-      color: var(--white);
-      margin-bottom: 6px;
-    }
-
-    .modal-sub {
-      font-size: 14px;
-      color: var(--muted);
-      line-height: 1.6;
-      margin-bottom: 28px;
-    }
-
-    .modal-plan-badge {
-      background: rgba(163,230,53,0.1);
-      border: 1px solid rgba(163,230,53,0.25);
-      border-radius: 12px;
-      padding: 14px 18px;
-      margin-bottom: 24px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-
-    .modal-plan-badge .plan-name-display {
-      font-size: 15px;
-      font-weight: 700;
-      color: var(--white);
-    }
-
-    .modal-plan-badge .plan-price-display {
-      font-size: 15px;
-      font-weight: 700;
-      color: var(--accent);
-    }
-
-    .form-field {
-      margin-bottom: 16px;
-    }
-
-    .form-field label {
-      display: block;
-      font-size: 12px;
-      font-weight: 600;
-      letter-spacing: 0.5px;
-      text-transform: uppercase;
-      color: var(--muted);
-      margin-bottom: 8px;
-    }
-
-    .form-field input {
-      width: 100%;
-      background: rgba(255,255,255,0.04);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 13px 16px;
-      font-size: 15px;
-      color: var(--white);
-      font-family: inherit;
-      transition: border-color 0.2s, box-shadow 0.2s;
-      outline: none;
-    }
-
-    .form-field input:focus {
-      border-color: var(--accent);
-      box-shadow: 0 0 0 3px rgba(163,230,53,0.1);
-    }
-
-    .form-field input::placeholder { color: rgba(245,245,247,0.25); }
-
-    .modal-error {
-      font-size: 13px;
-      color: #f87171;
-      margin-bottom: 14px;
-      display: none;
-    }
-
-    .modal-submit {
-      width: 100%;
-      padding: 14px;
-      background: var(--accent);
-      color: #000;
-      border: none;
-      border-radius: 100px;
-      font-size: 16px;
-      font-weight: 700;
-      font-family: inherit;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-
-    .modal-submit:hover {
-      box-shadow: 0 0 24px var(--accent-glow);
-      transform: scale(1.02);
-    }
-
-    .modal-submit:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
-
-    .modal-guarantee {
-      text-align: center;
-      font-size: 12px;
-      color: var(--muted);
-      margin-top: 16px;
-    }
-
-    /* ─── MOBILE ─── */
+    /* RESPONSIVE */
     @media (max-width: 768px) {
       nav { padding: 0 20px; }
       .nav-links { display: none; }
-      .stats-bar { flex-direction: column; gap: 32px; padding: 40px 24px; }
-      .stat::after { display: none; }
-      .stat { padding: 0; }
-      .card-body { padding: 28px 20px; }
-      footer { flex-direction: column; padding: 24px 20px; gap: 20px; }
-      .modal-box { padding: 32px 24px; }
-      .timeline::before { left: 22px; }
+      .proof-bar { gap: 24px; padding: 24px 20px; }
+      .value-grid { grid-template-columns: 1fr; }
+      .sample-body { padding: 24px 20px; }
+      footer { flex-direction: column; padding: 24px 20px; }
     }
-
     @media (max-width: 480px) {
       h1 { letter-spacing: -2px; }
-      .hero-actions { flex-direction: column; align-items: center; }
-      .btn-primary, .btn-secondary { width: 100%; justify-content: center; }
+      .hero-ctas { flex-direction: column; align-items: stretch; }
+      .btn-primary, .btn-outline { justify-content: center; }
     }
   </style>
 </head>
 <body>
 
-<!-- NAV -->
 <nav id="nav">
   <div class="logo">Write<span>AI</span></div>
   <ul class="nav-links">
-    <li><a href="#samples">Examples</a></li>
+    <li><a href="#samples">See examples</a></li>
     <li><a href="#pricing">Pricing</a></li>
     <li><a href="#how">How it works</a></li>
   </ul>
-  <a href="/editor" class="nav-cta" style="margin-right:8px;background:transparent;border:1px solid rgba(255,255,255,0.15);color:var(--muted)">Open editor</a>
-  <a href="#pricing" class="nav-cta">Start writing</a>
+  <div class="nav-actions">
+    <a href="/editor" class="btn-ghost">Sign in</a>
+    <a href="#pricing" class="btn-nav">Start writing</a>
+  </div>
 </nav>
 
 <!-- HERO -->
 <section class="hero">
-  <div class="hero-glow"></div>
-  <div class="hero-badge" id="hero-badge">Now available · From £9.99/month</div>
-  <h1 id="hero-h1">Your content,<br>written in <span class="accent-word">seconds.</span></h1>
-  <p class="hero-sub" id="hero-sub">Stop spending hours writing blog posts, product descriptions, and marketing copy. WriteAI handles the words so you can focus on the business.</p>
-  <div class="hero-actions" id="hero-actions">
-    <button class="btn-primary" onclick="openModal('pro','Pro','£29.99/month')">Start for free trial ↗</button>
-    <a href="#samples" class="btn-secondary">See real examples</a>
+  <div class="hero-bg"></div>
+  <div class="hero-kicker" id="hero-badge">AI content that doesn't read like AI</div>
+  <h1 id="hero-h1">Stop writing.<br>Start <em>publishing.</em></h1>
+  <p class="hero-sub" id="hero-sub">WriteAI generates blog posts, product descriptions, and marketing copy in seconds. Quality you'd expect from a professional writer, at a fraction of the cost.</p>
+  <div class="hero-ctas" id="hero-ctas">
+    <button class="btn-primary" onclick="openModal('pro','Pro','£29.99/month')">
+      Start writing now
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+    </button>
+    <a href="#samples" class="btn-outline">Read sample output</a>
   </div>
+  <p class="hero-note" id="hero-note">From £9.99/month · 7-day refund guarantee · Cancel any time</p>
 </section>
 
-<!-- STATS -->
-<div class="stats-bar">
-  <div class="stat" data-anim="fade-up">
-    <div class="stat-num">10×</div>
-    <div class="stat-label">Faster than writing manually</div>
+<!-- PROOF BAR -->
+<div class="proof-bar">
+  <div class="proof-item">
+    <span class="proof-num">10×</span>
+    <span class="proof-label">faster than writing manually</span>
   </div>
-  <div class="stat" data-anim="fade-up">
-    <div class="stat-num">£9.99</div>
-    <div class="stat-label">Starting price per month</div>
+  <div class="proof-item">
+    <span class="proof-num">6</span>
+    <span class="proof-label">content formats</span>
   </div>
-  <div class="stat" data-anim="fade-up">
-    <div class="stat-num">6</div>
-    <div class="stat-label">Content formats supported</div>
+  <div class="proof-item">
+    <span class="proof-num">£9.99</span>
+    <span class="proof-label">to get started</span>
   </div>
-  <div class="stat" data-anim="fade-up">
-    <div class="stat-num">7</div>
-    <div class="stat-label">Day money-back guarantee</div>
+  <div class="proof-item">
+    <span class="proof-num">7</span>
+    <span class="proof-label">day money-back guarantee</span>
   </div>
 </div>
 
-<!-- PROBLEM -->
-<section class="problem-section">
-  <div class="eyebrow" data-anim="fade-up">The problem</div>
-  <h2 class="section-title" data-anim="fade-up">Content is the bottleneck<br>for every growing business.</h2>
-  <p class="section-body" data-anim="fade-up">Freelancers charge £50–£150 per article and take days to deliver. Writing it yourself means hours you don't have. WriteAI generates polished, publish-ready content in under 30 seconds, at a fraction of the cost.</p>
-</section>
+<!-- VALUE PROP -->
+<section class="section">
+  <div class="section-inner">
+    <div class="eyebrow">The problem</div>
+    <h2 class="section-heading">Content is the bottleneck<br>nobody talks about.</h2>
+    <p class="section-sub">You know what to say. You just don't have the time to write it. A freelancer charges £100 per article and takes three days. Your team is too busy. So the blog sits empty, the product pages stay generic, and the campaigns don't go out.</p>
 
-<!-- SAMPLE OUTPUTS -->
-<section class="showcase-section" id="samples">
-  <div style="text-align:center;margin-bottom:64px">
-    <div class="eyebrow" data-anim="fade-up">Real output</div>
-    <h2 class="section-title" data-anim="fade-up">Read before you decide.</h2>
-    <p class="section-body" data-anim="fade-up" style="margin:0 auto">These are unedited samples. No cherry-picking. Judge the quality yourself.</p>
-  </div>
-
-  <div class="showcase-tabs" data-anim="fade-up">
-    <button class="stab active" onclick="switchSample('blog', this)">Blog post</button>
-    <button class="stab" onclick="switchSample('product', this)">Product description</button>
-    <button class="stab" onclick="switchSample('marketing', this)">Marketing copy</button>
-  </div>
-
-  <div class="showcase-card active" id="sample-blog">
-    <div class="card-header">
-      <div class="card-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div>
-      <div class="card-tag">Blog post</div>
-    </div>
-    <div class="card-body">
-      <h2>7 Remote Work Habits That Actually Move the Needle</h2>
-      <p>Three years ago, remote work was an experiment. Now it's a baseline expectation, and the gap between people who thrive in it and people who merely survive is growing wider. The difference rarely comes down to discipline or motivation. It comes down to systems.</p>
-      <h3>1. Protect your first 90 minutes</h3>
-      <p>The most consistent mistake remote workers make is letting their morning become reactive: checking email, responding to messages, reading the news. Your first 90 minutes are your highest-leverage time. Use them for the one task that matters most today, before the world has a chance to redirect your attention.</p>
-      <h3>2. Over-communicate context, not status</h3>
-      <p>Remote teams drown in status updates and starve for context. Most people default to "I'm working on X" when what their team actually needs is "I'm working on X because we're trying to achieve Y, and I'm blocked by Z." The extra sentence takes thirty seconds. The clarity it provides saves hours of misalignment downstream.</p>
-      <h3>3. End your day on paper, not in your head</h3>
-      <p>Without the physical act of leaving an office, work bleeds into evenings indefinitely. A written shutdown ritual of three sentences about what you finished, what's next, and any open loops gives your brain permission to stop. The format matters less than the consistency.</p>
-    </div>
-    <div class="card-meta">
-      <span class="meta-tag">Style: Blog</span>
-      <span class="meta-tag">Tone: Professional</span>
-      <span class="meta-tag">~700 words</span>
-      <span class="meta-tag">Generated in 4.2s</span>
-    </div>
-  </div>
-
-  <div class="showcase-card" id="sample-product">
-    <div class="card-header">
-      <div class="card-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div>
-      <div class="card-tag">Product description</div>
-    </div>
-    <div class="card-body">
-      <h2>FlexDesk Pro: Height-Adjustable Standing Desk with Integrated Cable Management</h2>
-      <p>Most standing desks solve one problem and create three more. The FlexDesk Pro is designed differently, starting from the assumption that a desk you'll actually use is worth more than one you'll avoid because it's cluttered, noisy, or a hassle to adjust.</p>
-      <p><strong>Clean by default.</strong> The integrated cable spine routes your monitor cables, laptop chargers, and peripherals through a single managed channel. No zip ties. No dangling cables when you raise or lower the surface. The desk looks identical at sitting height as it does at standing height.</p>
-      <p><strong>Whisper-quiet motor.</strong> The dual-motor lift system raises and lowers 80kg of load at 38dB, roughly the volume of a quiet library. Three programmable height presets mean your preferred positions are a single button press away.</p>
-      <p><strong>Built for daily use.</strong> The 25mm solid bamboo surface is rated for over 50,000 height adjustments. The powder-coated steel frame carries a 10-year structural warranty. This isn't furniture you replace. It's infrastructure you buy once.</p>
-    </div>
-    <div class="card-meta">
-      <span class="meta-tag">Style: Product</span>
-      <span class="meta-tag">Tone: Professional</span>
-      <span class="meta-tag">~350 words</span>
-      <span class="meta-tag">Generated in 3.1s</span>
-    </div>
-  </div>
-
-  <div class="showcase-card" id="sample-marketing">
-    <div class="card-header">
-      <div class="card-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div>
-      <div class="card-tag">Marketing copy</div>
-    </div>
-    <div class="card-body">
-      <h2>You're spending two days a month on invoices. That ends now.</h2>
-      <p>Most freelancers treat accounting as something that happens <em>to</em> them: a painful weekend before the tax deadline, receipts in a folder, invoices in a spreadsheet that's always slightly wrong.</p>
-      <p>LedgerLight is built for people who charge by the hour and hate paperwork. Connect your bank, categorise once, and every invoice, expense report, and VAT return is ready when you need it. The average user saves four hours a month on admin. Some save entire days.</p>
-      <p>14-day trial. Full feature access. Cancels any time. If you're still manually reconciling bank statements, something has gone wrong, and it takes eight minutes to fix it.</p>
-    </div>
-    <div class="card-meta">
-      <span class="meta-tag">Style: Marketing</span>
-      <span class="meta-tag">Tone: Direct</span>
-      <span class="meta-tag">~180 words</span>
-      <span class="meta-tag">Generated in 2.4s</span>
+    <div class="value-grid">
+      <div class="value-cell">
+        <div class="val-icon">⏱</div>
+        <h3>A full blog post in under 30 seconds</h3>
+        <p>Type your topic, pick a style, hit generate. Formatted, structured, ready to publish. No blank page, no waiting.</p>
+      </div>
+      <div class="value-cell accent-cell">
+        <div class="val-icon">🧠</div>
+        <h3>Engineered to not sound like AI</h3>
+        <p>We spent weeks on the prompts. Specific banned words, banned sentence structures, banned patterns. The output reads like a person wrote it, because it's designed to.</p>
+      </div>
+      <div class="value-cell">
+        <div class="val-icon">🔌</div>
+        <h3>Use the editor or the API</h3>
+        <p>Non-technical? Use the web editor, copy, paste, done. Developer? Hit the REST API from any stack: Zapier, Make, WordPress, Shopify, custom scripts.</p>
+      </div>
+      <div class="value-cell">
+        <div class="val-icon">💷</div>
+        <h3>90% less than a freelancer</h3>
+        <p>Freelance writers charge £50 to £150 per article. WriteAI Pro gives you 200 articles a month for £29.99. The maths isn't close.</p>
+      </div>
     </div>
   </div>
 </section>
 
-<!-- FEATURES -->
-<section class="features-section">
-  <div class="features-inner">
-    <div class="eyebrow" data-anim="fade-up" style="text-align:center">Why WriteAI</div>
-    <h2 class="section-title" data-anim="fade-up" style="text-align:center">Built for people who<br>need content that converts.</h2>
+<!-- SAMPLES -->
+<section class="section samples-section" id="samples">
+  <div class="section-inner">
+    <div class="eyebrow centered">Real output</div>
+    <h2 class="section-heading centered">Judge the quality yourself.</h2>
+    <p class="section-sub centered" style="margin:0 auto 40px">Unedited. No cherry-picking. This is what you get.</p>
 
-    <div class="features-grid">
-      <div class="feature-tile" data-anim="fade-up">
-        <div class="feature-icon-wrap">⚡</div>
-        <h3>Results in seconds</h3>
-        <p>A full blog post in under 30 seconds. No waiting, no chasing, no brief-writing.</p>
+    <div class="sample-tabs">
+      <button class="stab active" onclick="switchSample('blog',this)">Blog post</button>
+      <button class="stab" onclick="switchSample('product',this)">Product description</button>
+      <button class="stab" onclick="switchSample('marketing',this)">Marketing copy</button>
+    </div>
+
+    <div class="sample-card active" id="s-blog">
+      <div class="sample-header">
+        <div class="dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div>
+        <div class="sample-tag">Blog post</div>
       </div>
-      <div class="feature-tile" data-anim="fade-up">
-        <div class="feature-icon-wrap">🎯</div>
-        <h3>SEO-ready structure</h3>
-        <p>Every piece comes out with proper headings, keyword density, and flow that search engines reward.</p>
+      <div class="sample-body">
+        <h2>The morning habit that actually changes how your day goes</h2>
+        <p>Most morning routines fail for the same reason diets do. They're built around what sounds good in theory, not what holds up when your alarm goes off and you haven't slept well and the kids need breakfast before school.</p>
+        <h3>Protect the first hour</h3>
+        <p>The one habit that consistently matters: protecting the first 60 to 90 minutes from reactive tasks. Not email. Not social media. Not the news. The specific task depends on your work, but the principle doesn't. Your morning attention is the most valuable thing you have, and most people spend it responding to other people's priorities.</p>
+        <h3>Write it down the night before</h3>
+        <p>Willpower is a limited resource and it resets overnight, but decision fatigue doesn't wait for you to finish your coffee. If you wake up without knowing what matters most today, you'll spend the first hour figuring it out, and spend it reactively. A single sentence the night before: "Tomorrow, the one thing that matters is X." That's it.</p>
+        <p>The format matters less than the consistency. Some people use a notebook. Others use a phone. The act of writing creates the decision before the friction starts.</p>
       </div>
-      <div class="feature-tile" data-anim="fade-up">
-        <div class="feature-icon-wrap">✍️</div>
-        <h3>Six content formats</h3>
-        <p>Blog posts, marketing copy, product descriptions, social content, email newsletters, and SEO articles.</p>
+      <div class="sample-meta-bar">
+        <span class="meta-tag">Style: Blog</span>
+        <span class="meta-tag">Tone: Conversational</span>
+        <span class="meta-tag">~350 words</span>
+        <span class="meta-tag">Generated in 8s</span>
       </div>
-      <div class="feature-tile" data-anim="fade-up">
-        <div class="feature-icon-wrap">🔧</div>
-        <h3>Connects to anything</h3>
-        <p>REST API works with Zapier, Make, WordPress, Shopify, and any custom stack. No plugins needed.</p>
+    </div>
+
+    <div class="sample-card" id="s-product">
+      <div class="sample-header">
+        <div class="dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div>
+        <div class="sample-tag">Product description</div>
       </div>
-      <div class="feature-tile" data-anim="fade-up">
-        <div class="feature-icon-wrap">💸</div>
-        <h3>90% cheaper than agencies</h3>
-        <p>Freelancers charge £50–£150 per article. WriteAI delivers the same volume for less than £10 a month.</p>
+      <div class="sample-body">
+        <h2>FlexDesk Pro: Height-Adjustable Standing Desk</h2>
+        <p>Most standing desks solve one problem and create three more. The FlexDesk Pro starts from a different assumption: a desk you'll actually use is worth more than one you'll avoid because it's cluttered, noisy, or a hassle to adjust.</p>
+        <p><strong>Clean by default.</strong> The integrated cable spine runs the full length of the underframe, routing your monitor cables, chargers, and peripherals through a single managed channel. No zip ties. No dangling cables when you raise or lower the surface.</p>
+        <p><strong>Quiet motor.</strong> The dual-motor lift system handles 80kg at 38dB, roughly the volume of a quiet library. Three programmable height presets mean your preferred positions are one button press away.</p>
+        <p><strong>Built to last.</strong> The 25mm solid bamboo surface is rated for 50,000 height adjustments. Ten-year structural warranty on the frame. This is infrastructure, not furniture.</p>
+        <p>Available in 140cm and 160cm widths. Black or white frame. Natural bamboo or white laminate surface.</p>
       </div>
-      <div class="feature-tile" data-anim="fade-up">
-        <div class="feature-icon-wrap">🇬🇧</div>
-        <h3>Made for UK businesses</h3>
-        <p>GBP pricing, British English defaults, UK-friendly tone. No awkward Americanisms unless you want them.</p>
+      <div class="sample-meta-bar">
+        <span class="meta-tag">Style: Product</span>
+        <span class="meta-tag">Tone: Professional</span>
+        <span class="meta-tag">~280 words</span>
+        <span class="meta-tag">Generated in 6s</span>
+      </div>
+    </div>
+
+    <div class="sample-card" id="s-marketing">
+      <div class="sample-header">
+        <div class="dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div>
+        <div class="sample-tag">Marketing copy</div>
+      </div>
+      <div class="sample-body">
+        <h2>You're spending two days a month on invoices. That stops now.</h2>
+        <p>Most freelancers treat accounting as something that happens to them: a painful weekend before the tax deadline, receipts in a folder, invoices in a spreadsheet that's always slightly wrong.</p>
+        <p>LedgerLight is built for people who charge by the hour and hate paperwork. Connect your bank, categorise once, and every invoice, expense report, and VAT return is ready when you need it. The average user saves four hours a month. Some save entire days.</p>
+        <p>14-day trial. Full access. Cancels any time. If you're still manually reconciling bank statements, something has gone wrong, and it takes eight minutes to fix it.</p>
+      </div>
+      <div class="sample-meta-bar">
+        <span class="meta-tag">Style: Marketing</span>
+        <span class="meta-tag">Tone: Direct</span>
+        <span class="meta-tag">~150 words</span>
+        <span class="meta-tag">Generated in 5s</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="section how-section" id="how">
+  <div class="section-inner">
+    <div class="eyebrow">Process</div>
+    <h2 class="section-heading">Up and running in five minutes.</h2>
+    <div class="steps">
+      <div class="step">
+        <div class="step-n">1</div>
+        <div>
+          <h3>Pick a plan</h3>
+          <p>Monthly subscription. No annual commitment required. Cancel any time. There are no lock-ins, no contracts, no exit fees.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-n">2</div>
+        <div>
+          <h3>Create your account</h3>
+          <p>After checkout you go straight to the editor. Email and password. Nothing to install, no token to copy from an email.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-n">3</div>
+        <div>
+          <h3>Tell it what you need</h3>
+          <p>Topic, content type, length, tone. That is the entire input. No prompt engineering, no learning curve.</p>
+        </div>
       </div>
     </div>
   </div>
 </section>
 
 <!-- PRICING -->
-<section class="pricing-section" id="pricing">
-  <div class="eyebrow" data-anim="fade-up" style="text-align:center">Pricing</div>
-  <h2 class="section-title" data-anim="fade-up" style="text-align:center">One price. No surprises.</h2>
-  <p class="section-body" data-anim="fade-up" style="text-align:center;margin:0 auto 0">Cancel any time. 7-day refund if it's not what you expected.</p>
+<section class="section" id="pricing">
+  <div class="section-inner">
+    <div class="eyebrow centered">Pricing</div>
+    <h2 class="section-heading centered">Straightforward. No surprises.</h2>
+    <p class="section-sub centered" style="margin:0 auto 56px">One flat monthly fee. Cancel any time. 7-day full refund if it's not right for you.</p>
 
-  <div class="pricing-grid">
-    <div class="plan-card" data-anim="fade-up">
-      <div class="plan-label">Basic</div>
-      <div class="plan-price"><span class="currency">£</span>9<span style="font-size:26px">.99</span></div>
-      <div class="plan-cadence">per month</div>
-      <div class="plan-sep"></div>
-      <ul class="plan-features">
-        <li><div class="check">✓</div>50 articles per month</li>
-        <li><div class="check">✓</div>Up to 1,000 words each</li>
-        <li><div class="check">✓</div>Blog, marketing & social styles</li>
-        <li><div class="check">✓</div>API access included</li>
-        <li><div class="check">✓</div>Standard support</li>
-      </ul>
-      <button class="plan-btn plan-btn-ghost" onclick="openModal('basic','Basic','£9.99/month')">Get started</button>
-    </div>
-
-    <div class="plan-card featured" data-anim="fade-up">
-      <div class="featured-chip">Most popular</div>
-      <div class="plan-label">Pro</div>
-      <div class="plan-price"><span class="currency">£</span>29<span style="font-size:26px">.99</span></div>
-      <div class="plan-cadence">per month</div>
-      <div class="plan-sep"></div>
-      <ul class="plan-features">
-        <li><div class="check">✓</div>200 articles per month</li>
-        <li><div class="check">✓</div>Up to 2,000 words each</li>
-        <li><div class="check">✓</div>All 6 content formats</li>
-        <li><div class="check">✓</div>Custom tones & styles</li>
-        <li><div class="check">✓</div>Priority support</li>
-      </ul>
-      <button class="plan-btn plan-btn-main" onclick="openModal('pro','Pro','£29.99/month')">Get started</button>
-    </div>
-
-    <div class="plan-card" data-anim="fade-up">
-      <div class="plan-label">Enterprise</div>
-      <div class="plan-price"><span class="currency">£</span>99<span style="font-size:26px">.99</span></div>
-      <div class="plan-cadence">per month</div>
-      <div class="plan-sep"></div>
-      <ul class="plan-features">
-        <li><div class="check">✓</div>1,000+ articles per month</li>
-        <li><div class="check">✓</div>Unlimited length</li>
-        <li><div class="check">✓</div>Brand voice training</li>
-        <li><div class="check">✓</div>Custom integrations</li>
-        <li><div class="check">✓</div>Dedicated support</li>
-      </ul>
-      <button class="plan-btn plan-btn-ghost" onclick="openModal('enterprise','Enterprise','£99.99/month')">Get started</button>
-    </div>
-  </div>
-</section>
-
-<!-- HOW IT WORKS -->
-<section class="how-section" id="how">
-  <div class="how-inner">
-    <div class="eyebrow" data-anim="fade-up" style="text-align:center">How it works</div>
-    <h2 class="section-title" data-anim="fade-up" style="text-align:center">Up and running<br>in five minutes.</h2>
-
-    <div class="timeline">
-      <div class="tl-item" data-anim="fade-left">
-        <div class="tl-num">1</div>
-        <div class="tl-content">
-          <h3>Pick a plan</h3>
-          <p>Choose the volume that matches your needs. Pay monthly with no commitment. You can upgrade, downgrade, or cancel any time from your account.</p>
-        </div>
+    <div class="pricing-grid">
+      <div class="plan">
+        <div class="plan-name">Basic</div>
+        <div class="plan-price"><sup>£</sup>9<span style="font-size:26px">.99</span></div>
+        <div class="plan-cadence">per month</div>
+        <div class="plan-sep"></div>
+        <ul class="plan-feats">
+          <li><span class="chk">✓</span>50 articles per month</li>
+          <li><span class="chk">✓</span>Up to 1,000 words each</li>
+          <li><span class="chk">✓</span>All 6 content types</li>
+          <li><span class="chk">✓</span>Web editor + API access</li>
+          <li><span class="chk">✓</span>Generation history</li>
+        </ul>
+        <button class="plan-btn plan-btn-ghost" onclick="openModal('basic','Basic','£9.99/month')">Get started</button>
       </div>
-      <div class="tl-item" data-anim="fade-left">
-        <div class="tl-num">2</div>
-        <div class="tl-content">
-          <h3>Tell it what you need</h3>
-          <p>Enter your topic, pick a style and tone, choose a length. That's it. No prompts to write, no settings to configure, no learning curve.</p>
-        </div>
+
+      <div class="plan featured">
+        <div class="featured-chip">Most popular</div>
+        <div class="plan-name">Pro</div>
+        <div class="plan-price"><sup>£</sup>29<span style="font-size:26px">.99</span></div>
+        <div class="plan-cadence">per month</div>
+        <div class="plan-sep"></div>
+        <ul class="plan-feats">
+          <li><span class="chk">✓</span>200 articles per month</li>
+          <li><span class="chk">✓</span>Up to 2,000 words each</li>
+          <li><span class="chk">✓</span>All 6 content types</li>
+          <li><span class="chk">✓</span>Custom tones</li>
+          <li><span class="chk">✓</span>Priority support</li>
+          <li><span class="chk">✓</span>Full API access</li>
+        </ul>
+        <button class="plan-btn plan-btn-main" onclick="openModal('pro','Pro','£29.99/month')">Get started</button>
       </div>
-      <div class="tl-item" data-anim="fade-left">
-        <div class="tl-num">3</div>
-        <div class="tl-content">
-          <h3>Publish and move on</h3>
-          <p>Your content arrives formatted and ready to go. Paste it into WordPress, Shopify, or wherever you publish. Edit if you want to. The words are yours..</p>
-        </div>
+
+      <div class="plan">
+        <div class="plan-name">Enterprise</div>
+        <div class="plan-price"><sup>£</sup>99<span style="font-size:26px">.99</span></div>
+        <div class="plan-cadence">per month</div>
+        <div class="plan-sep"></div>
+        <ul class="plan-feats">
+          <li><span class="chk">✓</span>1,000+ articles per month</li>
+          <li><span class="chk">✓</span>Unlimited length</li>
+          <li><span class="chk">✓</span>Brand voice configuration</li>
+          <li><span class="chk">✓</span>Custom integrations</li>
+          <li><span class="chk">✓</span>Dedicated support</li>
+        </ul>
+        <button class="plan-btn plan-btn-ghost" onclick="openModal('enterprise','Enterprise','£99.99/month')">Get started</button>
       </div>
     </div>
   </div>
 </section>
 
 <!-- FAQ -->
-<section class="faq-section">
-  <div class="eyebrow" data-anim="fade-up">FAQ</div>
-  <h2 class="section-title" data-anim="fade-up">Questions worth answering.</h2>
-
-  <div class="faq-list" data-anim="fade-up">
-    <div class="faq-item">
-      <div class="faq-q" onclick="toggleFaq(this)">
-        Why no free tier?
-        <div class="faq-arrow">+</div>
+<section class="section" style="background:var(--dark);border-top:1px solid var(--border)">
+  <div class="section-inner">
+    <div class="eyebrow centered">FAQ</div>
+    <h2 class="section-heading centered">Honest answers.</h2>
+    <div class="faq-list">
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">Why no free plan?<div class="faq-icon">+</div></div>
+        <div class="faq-a">Running quality AI inference costs money. A free tier means subsidising it through your subscription, or cutting the quality to make the economics work. We'd rather charge a fair price and keep the output quality high. The sample outputs above exist so you can judge quality before spending anything. If you subscribe and it doesn't deliver, we refund you in full within 7 days.</div>
       </div>
-      <div class="faq-a">Running AI at this quality level has real infrastructure costs. A free tier either means subsidising it through your paid plan, or degrading quality to make the economics work. We'd rather be honest about the price, which is why the sample outputs above exist. Read them, then decide. If you subscribe and it's not what you expected, we'll refund you within 7 days, no questions asked.</div>
-    </div>
-    <div class="faq-item">
-      <div class="faq-q" onclick="toggleFaq(this)">
-        How is this different from ChatGPT?
-        <div class="faq-arrow">+</div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">How is this different from ChatGPT?<div class="faq-icon">+</div></div>
+        <div class="faq-a">ChatGPT is a general-purpose chat tool. WriteAI is a purpose-built content platform with a web editor, generation history, consistent structured output, usage tracking, and billing that makes sense for ongoing business use. We've also spent significant time on prompt engineering specifically to reduce AI writing patterns, the kind of thing you don't get from a generic chat interface.</div>
       </div>
-      <div class="faq-a">ChatGPT is a conversation tool. WriteAI is a purpose-built content service, with consistent output formats, usage tracking, billing that makes sense for business use, and the ability to connect to your existing tools via API. You're not copy-pasting from a chat window; you're generating content directly into your workflow.</div>
-    </div>
-    <div class="faq-item">
-      <div class="faq-q" onclick="toggleFaq(this)">
-        Who owns the content I generate?
-        <div class="faq-arrow">+</div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">Does it pass AI detection tools?<div class="faq-icon">+</div></div>
+        <div class="faq-a">Detection tools are inconsistent and unreliable. We don't optimise for gaming them. What we do optimise for is writing quality: no AI vocabulary tells, varied sentence length, specific concrete detail, genuine point of view. Output that reads well tends to perform better in search and with readers than output engineered to fool a detector.</div>
       </div>
-      <div class="faq-a">You do. Everything generated through your account is yours to use commercially, publish, sell, or adapt however you like. We retain no rights to your content.</div>
-    </div>
-    <div class="faq-item">
-      <div class="faq-q" onclick="toggleFaq(this)">
-        Can I connect this to Zapier, Make, or my website?
-        <div class="faq-arrow">+</div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">Who owns the content?<div class="faq-icon">+</div></div>
+        <div class="faq-a">You do. Everything generated through your account is yours to use commercially, publish, sell, or adapt however you like.</div>
       </div>
-      <div class="faq-a">Yes, it's a standard REST API, so anything that can make HTTP requests can use it. Zapier, Make, n8n, custom scripts, WordPress plugins, Shopify automation. All work out of the box.</div>
-    </div>
-    <div class="faq-item">
-      <div class="faq-q" onclick="toggleFaq(this)">
-        What's your refund policy?
-        <div class="faq-arrow">+</div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">Can I connect this to my website or automation tools?<div class="faq-icon">+</div></div>
+        <div class="faq-a">Yes. WriteAI has a REST API that works with anything that can make HTTP requests: Zapier, Make, n8n, WordPress, Shopify, custom code. Documentation is available after signing up.</div>
       </div>
-      <div class="faq-a">If you're not satisfied in the first 7 days, email us at support@contentlabs.ai and we'll refund you in full. No forms, no escalations, no questions.</div>
-    </div>
-    <div class="faq-item">
-      <div class="faq-q" onclick="toggleFaq(this)">
-        How do I log in after purchasing?
-        <div class="faq-arrow">+</div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">What's your refund policy?<div class="faq-icon">+</div></div>
+        <div class="faq-a">If you're not satisfied in the first 7 days, email support@contentlabs.ai and we'll refund you. No forms, no process, no questions.</div>
       </div>
-      <div class="faq-a">After checkout you'll be taken directly to a setup screen to choose a password. Once that's done you're logged in and writing. If you ever need to log in again, go to support@contentlabs.ai /editor on any device.</div>
     </div>
   </div>
 </section>
 
 <!-- FINAL CTA -->
 <section class="cta-section">
-  <div class="cta-glow"></div>
-  <h2 data-anim="fade-up">Your next article<br>is 30 seconds away.</h2>
-  <p data-anim="fade-up">Try it for 7 days. If it's not worth it, you get your money back.</p>
-  <button class="btn-primary" data-anim="fade-up" onclick="openModal('pro','Pro','£29.99/month')" style="font-size:18px;padding:18px 44px">Start writing now ↗</button>
-  <p class="cta-note" data-anim="fade-up">From £9.99/month &nbsp;·&nbsp; Cancel any time &nbsp;·&nbsp; 7-day refund guarantee</p>
+  <div class="cta-bg"></div>
+  <h2>Your next article<br>is 30 seconds away.</h2>
+  <p>Try it for 7 days. Full refund if it's not worth it.</p>
+  <button class="btn-primary" onclick="openModal('pro','Pro','£29.99/month')" style="font-size:17px;padding:16px 40px;margin:0 auto">
+    Start writing now
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+  </button>
+  <p class="hero-note" style="margin-top:16px">From £9.99/month · Cancel any time · 7-day refund guarantee</p>
 </section>
 
 <footer>
-  <div class="logo" style="font-size:16px">Write<span>AI</span></div>
-  <p>© 2026 AI Content Labs &nbsp;·&nbsp; Built in the UK</p>
+  <div class="logo">Write<span>AI</span></div>
+  <p>© 2026 AI Content Labs · Built in the UK</p>
   <div class="footer-links">
     <a href="mailto:support@contentlabs.ai">Support</a>
-    <a href="#pricing">Pricing</a>
+    <a href="/editor">Sign in</a>
   </div>
 </footer>
 
-<!-- CHECKOUT MODAL -->
+<!-- MODAL -->
 <div class="modal-backdrop" id="modal" onclick="if(event.target===this)closeModal()">
-  <div class="modal-box">
+  <div class="modal">
     <button class="modal-close" onclick="closeModal()">×</button>
     <h2>Get started</h2>
-    <p class="modal-sub">Enter your email and you'll be taken to our secure checkout. After payment, you'll set a password and start writing immediately.</p>
-
-    <div class="modal-plan-badge">
-      <span class="plan-name-display" id="modal-plan-name">Pro Plan</span>
-      <span class="plan-price-display" id="modal-plan-price">£29.99/month</span>
+    <p class="modal-sub">Enter your email and you'll be taken to secure checkout. After payment you go straight to the editor.</p>
+    <div class="modal-plan" id="modal-plan-display">
+      <span class="modal-plan-name" id="modal-plan-name">Pro Plan</span>
+      <span class="modal-plan-price" id="modal-plan-price">£29.99/month</span>
     </div>
-
-    <div class="form-field">
+    <div class="field">
       <label>Email address</label>
       <input type="email" id="modal-email" placeholder="you@yourcompany.com">
     </div>
-
-    <div class="form-field">
-      <label>Name <span style="opacity:0.4;font-weight:400;text-transform:none;letter-spacing:0">(optional)</span></label>
+    <div class="field">
+      <label>Name <span style="opacity:.4;text-transform:none;letter-spacing:0;font-weight:400">(optional)</span></label>
       <input type="text" id="modal-name" placeholder="Your name">
     </div>
-
-    <p class="modal-error" id="modal-error">Please enter a valid email address.</p>
-
-    <button class="modal-submit" id="modal-submit" onclick="submitCheckout()">Continue to secure checkout →</button>
-    <p class="modal-guarantee">🔒 Secured by Stripe &nbsp;·&nbsp; 7-day money-back guarantee</p>
+    <p class="modal-err" id="modal-err">Please enter a valid email address.</p>
+    <button class="modal-submit" id="modal-submit" onclick="submitCheckout()">Continue to secure checkout</button>
+    <p class="modal-guarantee">🔒 Secured by Stripe · 7-day money-back guarantee</p>
   </div>
 </div>
 
 <script>
-  // If GSAP CDN failed, page already has opacity:1 on everything - no action needed
-  if (typeof gsap !== 'undefined' && typeof ScrollTrigger !== 'undefined') {
+  // Nav scroll
+  ScrollTrigger && ScrollTrigger.create({ start:"top -60", onUpdate: s => document.getElementById('nav').classList.toggle('scrolled', s.progress > 0) });
 
-  gsap.registerPlugin(ScrollTrigger);
+  // Hero entrance
+  if (typeof gsap !== 'undefined') {
+    gsap.set(["#hero-badge","#hero-h1","#hero-sub","#hero-ctas","#hero-note"], {opacity:0, y:30});
+    gsap.timeline({delay:0.15})
+      .to("#hero-badge",  {opacity:1, y:0, duration:0.6, ease:"power3.out"})
+      .to("#hero-h1",     {opacity:1, y:0, duration:0.7, ease:"power3.out"}, "-=0.35")
+      .to("#hero-sub",    {opacity:1, y:0, duration:0.6, ease:"power3.out"}, "-=0.4")
+      .to("#hero-ctas",   {opacity:1, y:0, duration:0.5, ease:"power3.out"}, "-=0.35")
+      .to("#hero-note",   {opacity:1, y:0, duration:0.4, ease:"power3.out"}, "-=0.25");
 
-  // Only hide hero elements (they use gsap.to() timeline, not gsap.from())
-  gsap.set(["#hero-badge","#hero-h1","#hero-sub","#hero-actions"], { opacity: 0, y: 30 });
-
-  // NOTE: do NOT gsap.set scroll elements - gsap.from() handles their initial state
-  // Setting them to 0 first causes visible→invisible→visible flicker
-
-  // NAV scroll effect
-  ScrollTrigger.create({
-    start: "top -60",
-    onUpdate: self => {
-      document.getElementById('nav').classList.toggle('scrolled', self.progress > 0);
-    }
-  });
-
-  // HERO entrance
-  const tl = gsap.timeline({ delay: 0.2 });
-  tl.to("#hero-badge",   { opacity: 1, y: 0, duration: 0.6, ease: "power3.out" })
-    .to("#hero-h1",      { opacity: 1, y: 0, duration: 0.7, ease: "power3.out" }, "-=0.3")
-    .to("#hero-sub",     { opacity: 1, y: 0, duration: 0.6, ease: "power3.out" }, "-=0.4")
-    .to("#hero-actions", { opacity: 1, y: 0, duration: 0.6, ease: "power3.out" }, "-=0.3");
-
-  gsap.set(["#hero-badge","#hero-h1","#hero-sub","#hero-actions"], { y: 30 });
-
-  // Scroll animations
-  document.querySelectorAll('[data-anim]').forEach(el => {
-    const anim = el.dataset.anim;
-    const fromVars = { opacity: 0 };
-    if (anim === 'fade-up') fromVars.y = 40;
-    if (anim === 'fade-left') fromVars.x = -30;
-
-    gsap.from(el, {
-      ...fromVars,
-      duration: 0.75,
-      ease: "power3.out",
-      scrollTrigger: {
-        trigger: el,
-        start: "top 88%",
-        toggleActions: "play none none none"
-      }
+    gsap.utils.toArray('[data-reveal]').forEach(el => {
+      gsap.from(el, { opacity:0, y:36, duration:0.7, ease:"power3.out",
+        scrollTrigger:{ trigger:el, start:"top 88%", toggleActions:"play none none none" }
+      });
     });
-  });
-
-  // Showcase card animation
-  function switchSample(id, btn) {
-    document.querySelectorAll('.stab').forEach(b => b.classList.remove('active'));
-    document.querySelectorAll('.showcase-card').forEach(c => c.classList.remove('active'));
-    btn.classList.add('active');
-    const card = document.getElementById('sample-' + id);
-    card.classList.add('active');
-    gsap.fromTo(card, { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" });
   }
 
-  // FAQ accordion
+  // Samples
+  function switchSample(id, btn) {
+    document.querySelectorAll('.stab').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.sample-card').forEach(c => c.classList.remove('active'));
+    btn.classList.add('active');
+    const card = document.getElementById('s-' + id);
+    card.classList.add('active');
+    if (typeof gsap !== 'undefined') gsap.fromTo(card, {opacity:0, y:12}, {opacity:1, y:0, duration:0.35});
+  }
+
+  // FAQ
   function toggleFaq(el) {
     const item = el.parentElement;
     const isOpen = item.classList.contains('open');
@@ -1450,79 +579,57 @@
 
   // Modal
   let currentTier = 'pro';
-
   function openModal(tier, name, price) {
     currentTier = tier;
     document.getElementById('modal-plan-name').textContent = name + ' Plan';
     document.getElementById('modal-plan-price').textContent = price;
     document.getElementById('modal-email').value = '';
     document.getElementById('modal-name').value = '';
-    document.getElementById('modal-error').style.display = 'none';
-    document.getElementById('modal-submit').textContent = 'Continue to secure checkout →';
+    document.getElementById('modal-err').style.display = 'none';
+    document.getElementById('modal-submit').textContent = 'Continue to secure checkout';
     document.getElementById('modal-submit').disabled = false;
     document.getElementById('modal').classList.add('open');
-    setTimeout(() => document.getElementById('modal-email').focus(), 150);
+    setTimeout(() => document.getElementById('modal-email').focus(), 100);
   }
-
-  function closeModal() {
-    document.getElementById('modal').classList.remove('open');
-  }
-
+  function closeModal() { document.getElementById('modal').classList.remove('open'); }
   async function submitCheckout() {
     const email = document.getElementById('modal-email').value.trim();
     const name = document.getElementById('modal-name').value.trim();
-    const errEl = document.getElementById('modal-error');
+    const errEl = document.getElementById('modal-err');
     const btn = document.getElementById('modal-submit');
-
     if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       errEl.textContent = 'Please enter a valid email address.';
       errEl.style.display = 'block';
       return;
     }
-
     errEl.style.display = 'none';
     btn.textContent = 'Redirecting to Stripe...';
     btn.disabled = true;
-
     try {
       const res = await fetch('/subscription', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, tier: currentTier, name })
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({email, tier: currentTier, name})
       });
       const data = await res.json();
       if (data.checkout_url) {
         window.location.href = data.checkout_url;
       } else {
-        btn.textContent = 'Continue to secure checkout →';
-        btn.disabled = false;
         errEl.textContent = data.detail || 'Something went wrong. Please try again.';
         errEl.style.display = 'block';
+        btn.textContent = 'Continue to secure checkout';
+        btn.disabled = false;
       }
-    } catch (e) {
-      btn.textContent = 'Continue to secure checkout →';
-      btn.disabled = false;
+    } catch(e) {
       errEl.textContent = 'Network error. Please try again.';
       errEl.style.display = 'block';
+      btn.textContent = 'Continue to secure checkout';
+      btn.disabled = false;
     }
   }
-
   document.addEventListener('keydown', e => {
     if (e.key === 'Escape') closeModal();
     if (e.key === 'Enter' && document.getElementById('modal').classList.contains('open')) submitCheckout();
   });
-
-  // Parallax glow on hero
-  document.addEventListener('mousemove', e => {
-    const glow = document.querySelector('.hero-glow');
-    const x = (e.clientX / window.innerWidth - 0.5) * 40;
-    const y = (e.clientY / window.innerHeight - 0.5) * 40;
-    gsap.to(glow, { x, y, duration: 1.5, ease: "power2.out" });
-  });
-
-
-  } // end GSAP block
 </script>
-
 </body>
 </html>

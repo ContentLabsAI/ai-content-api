@@ -50,6 +50,33 @@
       "password_hash": "bd822f570d6267eeba8323f4cea7fd5bb10ec68a50ba3b93f8b0fd5ed2c0b47d",
       "openrouter_key": "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",
       "openrouter_key_hash": "bb6d30982136c0455a8ec7ed6bad405ec7028847dc1486036a01f0dbcadda243"
+    },
+    "usera@test.com": {
+      "email": "usera@test.com",
+      "name": "Alice",
+      "password_hash": "cf7c1862cda17035115aadba807f61ab4bae0552ff26d3d948390b8d196876a8",
+      "status": "active",
+      "tier": "basic",
+      "articles_used": 2,
+      "articles_limit": 50,
+      "created_at": 1774916832.8528817,
+      "stripe_session_id": null,
+      "activated_at": 1774916833.5394669,
+      "manually_activated": true,
+      "openrouter_key": "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",
+      "openrouter_key_hash": "6dd839b5a68fd2dcb35646ca8dfa72ff55475d0243c8f530ef9b923e386c4ac5"
+    },
+    "userb@test.com": {
+      "email": "userb@test.com",
+      "status": "active",
+      "tier": "pro",
+      "articles_limit": 200,
+      "articles_used": 1,
+      "activated_at": 1774916886.3054929,
+      "manually_activated": true,
+      "password_hash": "0d20c9c90ad79f8c0337f32349bb07931746e815689f9817b1c8a691a715f7f4",
+      "openrouter_key": "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",
+      "openrouter_key_hash": "eb30bb282db392f829041020a727d6d763435af5bc31b8e6bb3d961041257fbd"
     }
   },
   "sessions": {
@@ -96,6 +123,34 @@
     "JrJKJfyKlVEjenK6kin_JdaOlPkfvnCzCOVcB1RyZBg": {
       "email": "hugo@contentlabs.ai",
       "expires_at": 1777507929.4389873
+    },
+    "HmIGQ6r88CxPt7j5xUucr-fT6UVoeHgN5t295lQh4gQ": {
+      "email": "hugo@contentlabs.ai",
+      "expires_at": 1777508112.5362885
+    },
+    "SJTq8kDpdpqmP1LxzeOCqj5nf8SO5FFSzqYD_KdC-rk": {
+      "email": "hugo@contentlabs.ai",
+      "expires_at": 1777508256.1826577
+    },
+    "E_QYfPsP8-ioeapCYZMy_lbNv_cY6Wp1fXP3jjaDxPE": {
+      "email": "hugo@contentlabs.ai",
+      "expires_at": 1777508299.6742446
+    },
+    "wpn3rvo48Ypn73cxRWmH6NSJIt91z7mq_9e6Lj73JGw": {
+      "email": "usera@test.com",
+      "expires_at": 1777508832.8568573
+    },
+    "B2NO7QM1jVdn-WpQm8ftURVIeiMEm7-zAQCN95cAgQM": {
+      "email": "usera@test.com",
+      "expires_at": 1777508833.541531
+    },
+    "Ubtl-7VuEfsMbVfVJiN0hY-v4DkYnCN_qFTIMoggEdQ": {
+      "email": "usera@test.com",
+      "expires_at": 1777508854.8711483
+    },
+    "M5UAUgZnCOYAQJG_rxQv2txcV9_3gwvfcAzzEXa882I": {
+      "email": "usera@test.com",
+      "expires_at": 1777508892.0826719
     }
   },
   "history": {
@@ -109,6 +164,40 @@
         "content": "Think about this: what if you could jump-start your day by accomplishing more before noon than some people do all week? Picture a quiet house at 6 AM. The sun is just peeking through the blinds, and instead of hitting snooze, you\u2019re already in your favorite chair, sipping coffee while reviewing your day\u2019s goals. That's the kind of morning routine that sets you up for success.\n\nFirst, stay consistent. Waking up at the same time every day helps regulate your body\u2019s internal clock. Choose a time and stick to it. After a week or two, you'll find it easier to get out of bed. \n\nNext, don\u2019t underestimate the power of movement. Whether it\u2019s a brisk walk around the block or a short yoga session, getting your blood flowing has immediate benefits for mood and focus. Twenty minutes of physical activity can boost your energy and sharpen your thinking. \n\nHydrate. After several hours of sleep, your body needs water to function well. A glass of water first thing can kickstart your metabolism and help you feel more alert. Follow up with a healthy breakfast. Oatmeal with fruit or eggs and avocado can give you lasting energy.\n\nLastly, spend a few minutes on mindfulness. This doesn\u2019t have to be complex. A simple five-minute meditation or journaling session can help clear your mind, reduce stress, and set positive intentions for the day ahead. \n\nAll of these elements work together to create a routine that gears you up, fuels your motivation, and primes your mind for productivity. Stick with it. Transform your mornings, and you\u2019ll likely see a domino effect throughout your day.",
         "words": 269,
         "created_at": 1774915936.1806507
+      }
+    ],
+    "usera@test.com": [
+      {
+        "id": "ZbNGWtqAhZU",
+        "topic": "how to write better product descriptions for e-commerce",
+        "style": "blog",
+        "length": "short",
+        "tone": "professional",
+        "content": "A pair of running shoes can easily be lost among countless other brands in an online store. Buyers scroll past generic descriptions like \"comfortable and durable,\" often leaving their shopping carts empty. A captivating product description might just be the key to turning interest into a sale.\n\nFirst, focus on the product\u2019s benefits. Instead of stating facts, illustrate how the shoes can enhance the buyer\u2019s experience. Are they perfect for long-distance runs? Do they provide unparalleled arch support? Paint a picture: \u201cWith each mile, these shoes cradle your feet, ensuring you stay energized, comfortable, and ready to conquer the finish line.\u201d\n\nNext, incorporate storytelling. Share the inspiration behind the product. Was it designed by athletes or inspired by nature? This not only builds a connection with potential buyers but evokes emotions that compel them to act. For instance, a description could tell how the lightweight material allows wearers to feel as if they\u2019re gliding, making them feel invincible during a morning jog.\n\nDon\u2019t skimp on specifics. Include dimensions, materials, and sizing information. Shoppers want to know exactly what they are getting. \u201cFeaturing breathable mesh and a cushioned insole, these shoes weigh just 8 ounces,\u201d gives a practical edge. It sets clear expectations and assures consumers they\u2019re making an informed choice.\n\nLastly, use clear calls to action. Phrases like \u201cJoin thousands of satisfied runners\u201d or \u201cStep into your next adventure\u201d nudge the hesitant buyer. Make it clear what their next move should be.\n\nWriting compelling product descriptions isn't just about filling space. It\u2019s about connecting with your audience, telling a story, and guiding them toward a purchase. In a crowded e-commerce space, clarity and creativity can make all the difference.",
+        "words": 279,
+        "created_at": 1774916861.0299625
+      },
+      {
+        "id": "JkKb_PUYlII",
+        "topic": "summer sale campaign for clothing brand",
+        "style": "marketing",
+        "length": "short",
+        "tone": "direct",
+        "content": "This weekend only, grab a sizzling 30% off our entire summer clothing collection! Picture this: you stroll down the beach in our light, breezy sundress or catch a sunset in one of our vibrant, patterned shirts. Your summer wardrobe deserves an upgrade, and with savings like these, now's the perfect time to lighten up your closet.\n\nOur summer sale isn't just about price cuts; it's about feeling great in clothes that fit your lifestyle. From relaxed beach vibes to laid-back evening gatherings, our versatile pieces are crafted with comfort and style in mind. Imagine sinking your toes in warm sand, all while wearing a top that keeps you cool and looking sharp. Every item in this collection is designed to move with you, whether you\u2019re hitting a summer festival or hosting a barbecue.\n\nDon't let this chance pass you by. Update your summer outfits with our premium fabrics and trendy designs. All items are included in this promotion, so whether you need a chic swimsuit cover-up or everyday shorts, we\u2019ve got you covered.\n\nTime is ticking, and stock is limited. Visit our website today to browse the collection and take advantage of our summer sale. Simply enter promo code SUMMER30 at checkout to claim your discount. \n\nShop now and make this summer your best one yet, filled with stunning outfits and unforgettable moments. The sun is shining, but these deals won\u2019t last long! Don\u2019t wait; click through and start your style refresh today!",
+        "words": 243,
+        "created_at": 1774916866.537388
+      }
+    ],
+    "userb@test.com": [
+      {
+        "id": "E2ND0INjwqo",
+        "topic": "benefits of remote work for small businesses",
+        "style": "seo",
+        "length": "short",
+        "tone": "professional",
+        "content": "**Meta Description:** Discover the key benefits of remote work for small businesses. Explore how flexibility, cost savings, and access to talent can enhance your team\u2019s productivity. \n\n---\n\nIn 2020, about 70% of small businesses shifted to remote work, a move driven by necessity but one that has since revealed myriad benefits. For small business owners looking to adapt, remote work isn\u2019t just a temporary solution; it\u2019s a strategic advantage.\n\nOne significant benefit is cost reduction. On average, businesses can save around $11,000 per employee annually in real estate expenses when employees work from home. These savings can be redirected towards technology, marketing, or even employee benefits.\n\nFlexibility is another major advantage. Employees working remotely can create schedules that fit their personal lives, which often leads to higher job satisfaction. This flexibility can boost productivity; studies show that remote workers often put in longer hours and are 20% more productive than their in-office counterparts. \n\nAccessing a broader talent pool is invaluable for small businesses. By eliminating geographical constraints, owners can hire skilled professionals from across the country or even globally. This not only enhances diversity but also brings varying perspectives that can inspire innovation.\n\nMoreover, remote work can enhance employee retention. A survey found that nearly 85% of employees prefer remote or hybrid working arrangements. This preference helps small businesses maintain their teams without the costs associated with high turnover, such as recruiting and training new hires.\n\nFinally, embracing remote work can improve your business\u2019s resilience. During unforeseen events like natural disasters or pandemics, having a remote workforce allows operations to continue with minimal interruption.\n\nIncorporating remote work into your business model offers significant benefits that can propel growth and foster a more engaged workforce. Small businesses that adapt will likely see these advantages pay off in the long run.",
+        "words": 299,
+        "created_at": 1774916892.076824
       }
     ]
   }

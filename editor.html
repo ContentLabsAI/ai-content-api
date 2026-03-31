@@ -250,7 +250,7 @@
 <div class="toast" id="toast"></div>
 
 <script>
-  let sessionToken = null;
+  let sessionToken=***
   let currentType = 'blog';
   let currentLen = 'short';
   let rawContent = '';
@@ -269,7 +269,7 @@
       const res = await fetch('/auth/login', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({email, password: pass})});
       const data = await res.json();
       if (res.ok) {
-        sessionToken = data.session_token;
+        sessionToken=data.s...ken;
         sessionStorage.setItem('wai_session', sessionToken);
         bootApp(data.user);
       } else {
@@ -304,7 +304,7 @@
   async function signOut() {
     if (sessionToken) fetch('/auth/logout', {method:'POST', headers:{'X-Session-Token':sessionToken}}).catch(()=>{});
     sessionStorage.removeItem('wai_session');
-    sessionToken = null;
+    sessionToken=***
     document.getElementById('app-screen').style.display = 'none';
     document.getElementById('login-screen').style.display = 'flex';
     document.getElementById('l-email').value = '';
@@ -316,7 +316,7 @@
     if (!saved) return;
     try {
       const res = await fetch('/auth/me', {headers:{'X-Session-Token':saved}});
-      if (res.ok) { sessionToken = saved; bootApp(await res.json()); }
+      if (res.ok) { sessionToken=*** bootApp(await res.json()); }
       else sessionStorage.removeItem('wai_session');
     } catch(e) {}
   });
@@ -333,6 +333,7 @@
     btn.classList.add('active');
     document.querySelectorAll('.pane').forEach(p => p.classList.remove('active'));
     document.getElementById('pane-' + tab).classList.add('active');
+    if (tab === 'history') loadHistory(); // always refresh when tab opened
   }
 
   // ── GENERATE ──
