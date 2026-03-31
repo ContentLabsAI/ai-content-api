@@ -44,7 +44,7 @@
       "status": "active",
       "tier": "pro",
       "articles_limit": 200,
-      "articles_used": 0,
+      "articles_used": 1,
       "activated_at": 1774914222.5079126,
       "manually_activated": true,
       "password_hash": "bd822f570d6267eeba8323f4cea7fd5bb10ec68a50ba3b93f8b0fd5ed2c0b47d",
@@ -72,6 +72,14 @@
     "v9W5g2Gqw-Cr1AkrNrwECrsrDpumQUKaq4kLfAMH14U": {
       "email": "hugo@test.com",
       "expires_at": 1777506173.766383
+    },
+    "LgfbRWPvo4sc3xnHb0Z8QZGeOaN6lO5ZIq7C0uaMf7w": {
+      "email": "hugo@contentlabs.ai",
+      "expires_at": 1777507021.0693445
+    },
+    "3YMqEOe0kakFT432PfYAQT7k1IgNk5jLe9bSiCQIM5o": {
+      "email": "hugo@contentlabs.ai",
+      "expires_at": 1777507320.3544958
     }
   }
 }

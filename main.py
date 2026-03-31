@@ -352,8 +352,9 @@ async def generate_content(request: ContentRequest, user: dict = Depends(require
         )
 
     start = time.time()
-    customer_key = user.get("openrouter_key") or OPENROUTER_API_KEY
-    content = await generate_ai_content(request.topic, request.style, request.length, request.tone, customer_key=customer_key)
+    # Use main key for all generation (sub-keys require funded management account)
+    # Per-customer limits enforced via articles_used counter above
+    content = await generate_ai_content(request.topic, request.style, request.length, request.tone, customer_key=OPENROUTER_API_KEY)
 
     # Update usage
     db = load_db()
