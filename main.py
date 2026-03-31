@@ -50,21 +50,21 @@ if STRIPE_SECRET_KEY:
 PRICING = {
     "basic": {
         "name": "Basic",
-        "price_id": "price_1TGJmG8AZvg3KupHn8bOh4PE",
+        "price_id": "price_1TGzMb60lIeZHMRec2NgrTGr",
         "monthly": 9.99,
         "articles": 50,
         "features": ["50 articles/month", "Up to 1,000 words each", "All content types", "API access", "Standard support"]
     },
     "pro": {
         "name": "Pro",
-        "price_id": "price_1TGJnK8AZvg3KupHfXEbvOyl",
+        "price_id": "price_1TGzMc60lIeZHMRec7ZEbaWp",
         "monthly": 29.99,
         "articles": 200,
         "features": ["200 articles/month", "Up to 2,000 words each", "All content types", "Custom tones", "Priority support"]
     },
     "enterprise": {
         "name": "Enterprise",
-        "price_id": "price_1TGJno8AZvg3KupH7LfjykRe",
+        "price_id": "price_1TGzMc60lIeZHMReaaTwKsRK",
         "monthly": 99.99,
         "articles": 1000,
         "features": ["1,000+ articles/month", "Unlimited length", "Brand voice", "Custom integrations", "Dedicated support"]
