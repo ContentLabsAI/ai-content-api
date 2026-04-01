@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>WriteAI - Free AI Content Generator</title>
+<title>WriteHQ – AI content that doesn't sound like AI</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0f0f0f; color: #fff; min-height: 100vh; }
@@ -58,7 +58,7 @@
 <body>
 
 <div class="hero">
-  <h1>WriteAI</h1>
+  <h1>WriteHQ</h1>
   <p>Generate professional blog posts, marketing copy & more in seconds</p>
   <div class="free-badge">✦ 3 free articles — no signup required</div>
 </div>
@@ -163,7 +163,7 @@
 </div>
 
 <script>
-  let usedCount = parseInt(localStorage.getItem('writeai_used') || '0');
+  let usedCount = parseInt(localStorage.getItem('writehq_used') || '0');
   let selectedTone = 'professional';
   const FREE_LIMIT = 3;
 
@@ -223,7 +223,7 @@
         output.textContent = data.content;
         output.classList.add('visible');
         usedCount++;
-        localStorage.setItem('writeai_used', usedCount);
+        localStorage.setItem('writehq_used', usedCount);
         document.getElementById('usedCount').textContent = usedCount;
         if (usedCount >= FREE_LIMIT) {
           btn.textContent = '🔒 Upgrade for More Articles';

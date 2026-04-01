@@ -1,5 +1,5 @@
 """
-WriteAI – AI Content Labs
+WriteHQ – AI Content Labs
 FastAPI backend v0.5.0
 Auth: email + password. No API key exposure to end users.
 """
@@ -17,7 +17,7 @@ import stripe
 
 load_dotenv()
 
-app = FastAPI(title="WriteAI", version="0.5.0")
+app = FastAPI(title="WriteHQ", version="0.6.3")
 
 app.add_middleware(
     CORSMiddleware,
@@ -157,7 +157,7 @@ async def provision_openrouter_key(email: str, tier: str) -> dict:
         return {"error": "No management key configured"}
 
     limit = PLAN_CREDIT_LIMITS.get(tier, 3.0)
-    label = f"WriteAI:{email}:{tier}"
+    label = f"WriteHQ:{email}:{tier}"
 
     async with httpx.AsyncClient(timeout=15) as client:
         resp = await client.post(
@@ -221,7 +221,7 @@ async def generate_ai_content(topic: str, style: str = "blog", length: str = "me
             headers={
                 "Authorization": f"Bearer {api_key}",
                 "HTTP-Referer": "https://writehq.app",
-                "X-Title": "WriteAI"
+                "X-Title": "WriteHQ"
             },
             json={
                 "model": "openai/gpt-4o-mini",
@@ -440,7 +440,7 @@ async def create_subscription(request: SubscriptionRequest):
                 "price_data": {
                     "currency": "gbp",
                     "product_data": {
-                        "name": f"WriteAI {tier_info['name']} Plan",
+                        "name": f"WriteHQ {tier_info['name']} Plan",
                         "description": f"{tier_info['articles']} articles per month"
                     },
                     "unit_amount": int(tier_info["monthly"] * 100),
@@ -538,7 +538,7 @@ async def root():
     p = pathlib.Path("landing.html")
     if p.exists():
         return FileResponse("landing.html", media_type="text/html")
-    return {"name": "WriteAI", "version": "0.5.0"}
+    return {"name": "WriteHQ", "version": "0.6.3"}
 
 @app.get("/editor")
 async def editor():
@@ -554,7 +554,7 @@ async def setup_page(session_id: str = ""):
     if p.exists():
         return FileResponse("setup.html", media_type="text/html")
     # Fallback
-    html = """<!DOCTYPE html><html><head><title>Welcome to WriteAI</title>
+    html = """<!DOCTYPE html><html><head><title>Welcome to WriteHQ</title>
     <style>body{font-family:system-ui,sans-serif;max-width:500px;margin:80px auto;text-align:center;color:#111}
     h1{font-size:32px;font-weight:800;margin-bottom:12px}p{color:#555;margin-bottom:24px}
     a{background:#a3e635;color:#000;padding:13px 28px;border-radius:8px;text-decoration:none;font-weight:700}</style></head>
