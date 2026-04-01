@@ -194,6 +194,118 @@
     .modal-submit:disabled { opacity:0.5; cursor:not-allowed; box-shadow:none; }
     .modal-guarantee { text-align:center; font-size:12px; color:var(--muted); margin-top:14px; }
 
+    /* VISUAL POLISH */
+
+    /* Dot grid texture on hero */
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background-image: radial-gradient(rgba(255,255,255,0.035) 1px, transparent 1px);
+      background-size: 28px 28px;
+      mask-image: radial-gradient(ellipse 80% 70% at 50% 40%, black 30%, transparent 80%);
+      -webkit-mask-image: radial-gradient(ellipse 80% 70% at 50% 40%, black 30%, transparent 80%);
+    }
+
+    /* Stronger, wider hero glow */
+    .hero-bg {
+      background:
+        radial-gradient(ellipse 70% 55% at 50% 10%, rgba(163,230,53,0.11) 0%, transparent 65%),
+        radial-gradient(ellipse 40% 30% at 30% 70%, rgba(163,230,53,0.04) 0%, transparent 60%),
+        radial-gradient(ellipse 40% 30% at 70% 80%, rgba(99,102,241,0.04) 0%, transparent 60%);
+    }
+
+    /* CTA button shimmer */
+    .btn-primary {
+      position: relative;
+      overflow: hidden;
+    }
+    .btn-primary::after {
+      content: "";
+      position: absolute;
+      top: 0; left: -100%;
+      width: 60%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.18), transparent);
+      transition: left 0.5s ease;
+    }
+    .btn-primary:hover::after { left: 160%; }
+
+    /* Value cells — hover glow */
+    .value-cell {
+      transition: border-color 0.25s, background 0.25s;
+      border: 1px solid transparent;
+    }
+    .value-cell:hover {
+      border-color: rgba(163,230,53,0.15);
+      background: linear-gradient(135deg, rgba(163,230,53,0.05), var(--card));
+    }
+    .value-cell.accent-cell:hover {
+      background: linear-gradient(135deg, rgba(163,230,53,0.12), var(--card));
+    }
+
+    /* Featured pricing card glow */
+    .plan.featured {
+      box-shadow: 0 0 0 1px rgba(163,230,53,0.4), 0 8px 48px rgba(163,230,53,0.12), 0 2px 16px rgba(0,0,0,0.4);
+    }
+    .plan.featured:hover {
+      box-shadow: 0 0 0 1px rgba(163,230,53,0.6), 0 16px 64px rgba(163,230,53,0.18), 0 2px 24px rgba(0,0,0,0.5);
+    }
+
+    /* Proof bar — subtle gradient bg */
+    .proof-bar {
+      background: linear-gradient(180deg, rgba(163,230,53,0.03) 0%, transparent 100%);
+    }
+    .proof-num {
+      background: linear-gradient(135deg, #fff 40%, rgba(163,230,53,0.9));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* Step numbers — glow on accent */
+    .step-n {
+      box-shadow: 0 0 0 1px rgba(163,230,53,0.15);
+      transition: box-shadow 0.2s, background 0.2s;
+    }
+    .step:hover .step-n {
+      background: rgba(163,230,53,0.12);
+      box-shadow: 0 0 12px rgba(163,230,53,0.2), 0 0 0 1px rgba(163,230,53,0.3);
+    }
+
+    /* Section alternating backgrounds */
+    .section:nth-child(odd) {
+      background: linear-gradient(180deg, rgba(255,255,255,0.01) 0%, transparent 100%);
+    }
+
+    /* Kicker badge pulse glow */
+    .hero-kicker {
+      box-shadow: 0 0 20px rgba(163,230,53,0.12);
+    }
+
+    /* Sample card browser chrome — more polished */
+    .sample-header {
+      background: linear-gradient(180deg, #1a1a1a, var(--dark));
+    }
+
+    /* Final CTA glow — stronger */
+    .cta-bg {
+      background:
+        radial-gradient(ellipse 55% 75% at 50% 50%, rgba(163,230,53,0.1), transparent 65%),
+        radial-gradient(ellipse 30% 40% at 50% 90%, rgba(163,230,53,0.05), transparent 70%);
+    }
+
+    /* Footer — subtle top gradient */
+    footer {
+      background: linear-gradient(180deg, rgba(163,230,53,0.02) 0%, transparent 40%);
+    }
+
+    /* Smooth card plan hover */
+    .plan {
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
     /* RESPONSIVE */
     @media (max-width: 768px) {
       nav { padding: 0 20px; }
@@ -269,12 +381,12 @@
     <p class="section-sub">You know what to say. You just don't have the time to write it. A freelancer charges £100 per article and takes three days. Your team is too busy. So the blog sits empty, the product pages stay generic, and the campaigns don't go out.</p>
 
     <div class="value-grid">
-      <div class="value-cell">
+      <div class="value-cell" data-reveal>
         <div class="val-icon">⏱</div>
         <h3>A full blog post in under 30 seconds</h3>
         <p>Type your topic, pick a style, hit generate. Formatted, structured, ready to publish. No blank page, no waiting.</p>
       </div>
-      <div class="value-cell accent-cell">
+      <div class="value-cell accent-cell" data-reveal>
         <div class="val-icon">🧠</div>
         <h3>Engineered to not sound like AI</h3>
         <p>We spent weeks on the prompts. Specific banned words, banned sentence structures, banned patterns. The output reads like a person wrote it, because it's designed to.</p>
