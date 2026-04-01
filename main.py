@@ -535,6 +535,14 @@ async def health():
 
 # ── Pages ──
 
+@app.get("/robots.txt")
+async def robots():
+    return FileResponse("static/robots.txt", media_type="text/plain")
+
+@app.get("/sitemap.xml")
+async def sitemap():
+    return FileResponse("static/sitemap.xml", media_type="application/xml")
+
 @app.get("/")
 async def root():
     p = pathlib.Path("landing.html")

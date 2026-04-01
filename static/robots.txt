@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /auth/
+
+Sitemap: https://writehq.app/static/sitemap.xml
