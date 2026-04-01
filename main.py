@@ -19,6 +19,8 @@ load_dotenv()
 
 app = FastAPI(title="WriteHQ", version="0.6.3")
 
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
