@@ -220,7 +220,7 @@ async def generate_ai_content(topic: str, style: str = "blog", length: str = "me
             OPENROUTER_URL,
             headers={
                 "Authorization": f"Bearer {api_key}",
-                "HTTP-Referer": "https://writeai.contentlabs.ai",
+                "HTTP-Referer": "https://writehq.app",
                 "X-Title": "WriteAI"
             },
             json={
